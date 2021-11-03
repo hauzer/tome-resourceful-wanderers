@@ -8,7 +8,11 @@ The first time a steamtech tree is learned, the tinker escort quest will be auto
 
 ## Equilibrium, Souls, Insanity
 
-When a talent which uses equilibrium, souls or insanity is first learned, a relevant random resource-generation talent or set of talents will be learned, if none of those were already known, *and* if you don't know their tree(s). They're only eligible if they pass the non-level, non-stats checks (e.g. non-Dwarves won't be granted Stoneshield). The first talent learned in this manner will become non-unlearnable (i.e. you won't be able to unlearn it).
+When a talent which uses equilibrium, souls or insanity is first learned, a relevant random resource-generation talent or set of talents will be learned.
+- These are only given if not already known and if you don't know their tree(s).
+- They're only eligible if they pass the non-level, non-stats checks. For example, non-Dwarves won't be granted Stone Warden talents.
+- The first talent learned in this manner will become non-unlearnable, i.e. you won't be able to unlearn it.
+- The randomness takes the seed into account.
 
 The possible granted talents/talent groups are as follows:
 
