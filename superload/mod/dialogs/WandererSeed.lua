@@ -23,7 +23,7 @@ function _M:makeWanderer()
     self.actor.randventurerLearn = base_randventurerLearn
     self.finish = base_finish
 
-    self.actor.resourceful_randventurer.talents_types_ids_groups = {
+    self.actor.resourceful_randventurer.talents_types_resolvers = {
         {
             resolved = 0,
             applies_to_talent_type_id = function(talent_type_id)
@@ -157,8 +157,8 @@ function _M:makeWanderer()
     local seed = tonumber(iseed)
 
     rng.seed(seed)
-    for _, category_id in ipairs(self.actor.resourceful_randventurer.talents_types_ids_groups) do
-        table.shuffle(category_id.talents_ids_groups)
+    for _, talents_types_resolver in ipairs(self.actor.resourceful_randventurer.talents_types_resolvers) do
+        table.shuffle(talents_types_resolver.talents_ids_groups)
     end
     rng.seed(os.time())
 

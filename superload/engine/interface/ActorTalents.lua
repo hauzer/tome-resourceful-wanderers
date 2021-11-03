@@ -5,179 +5,6 @@ local EscortRewards = require('mod.class.EscortRewards')
 local Dialog = require('engine.ui.Dialog')
 
 
-local base_learnTalent = _M.learnTalent
-function _M:learnTalent(learned_talent_id, force, nb)
-    local retval = base_learnTalent(self, learned_talent_id, force, nb)
-
-    if retval and self.resourceful_randventurer then
-        local learned_talent = self:getTalentFromId(learned_talent_id)
-        local learned_talent_type_id = learned_talent.type[1]
-
-        local talents_types_ids_group = nil
-        for _, group in ipairs(self.resourceful_randventurer.talents_types_ids_groups) do
-            if group.applies_to_talent_type_id(learned_talent_type_id) then
-                talents_types_ids_group = group
-                break
-            end
-        end
-
-        if talents_types_ids_group then
-            if talents_types_ids_group.resolved == 0 then
-                if not talents_types_ids_group.chosen then
-                    for _, group in ipairs(talents_types_ids_group.talents_ids_groups) do
-                        -- Check if all of the talents from a talent group can be learned
-                        local can_all_talents_be_learned = function()
-                            for _, talent_id in ipairs(group) do
-                                local talent = self:getTalentFromId(talent_id)
-                                if rawget(talent, 'require') then
-                                    local require = talent.require
-                                    if type(require) == 'function' then require = require(self, talent) end
-                                    local offset = 1
-
-                                    if require.special and not require.special.fct(self, t, offset) then
-                                        return false
-                                    end
-
-                                    if require.special2 and not require.special2.fct(self, talent, offset) then
-                                        return false
-                                    end
-
-                                    if require.special3 and not require.special3.fct(self, talent, offset) then
-                                        return false
-                                    end
-
-                                    if require.birth_descriptors then
-                                        for _, d in ipairs(require.birth_descriptors) do
-                                            if not self.descriptor or self.descriptor[d[1]] ~= d[2] then
-                                                return false
-                                            end
-                                        end
-                                    end
-                                end
-
-                                return true
-                            end
-                        end
-
-                        -- Set this talent groups as the chosen one if all of the talents pass the checks
-                        if can_all_talents_be_learned() then
-                            talents_types_ids_group.chosen = group
-                            break
-                        end
-                    end
-                end
-
-                -- We have a chosen group
-                if talents_types_ids_group.chosen then
-                    -- Learn all of the talents from the group
-                    for _, talent_id in ipairs(talents_types_ids_group.chosen) do
-                        base_learnTalent(self, talent_id, true, nil, {no_unlearn = true})
-                    end
-
-                    -- Mark the learned talent as non-unlearnable
-                    if learned_talent.base_no_unlearn_last ~= nil then
-                        learned_talent.no_unlearn_last = learned_talent.base_no_unlearn_last
-                    end
-                    learned_talent.no_unlearn_last = true
-
-                    -- Revert the unlearnability state of all other talents
-                    for talent_type_id, known in pairs(self.talents_types) do
-                        if known and talents_types_ids_group.applies_to_talent_type_id(talent_type_id) then
-                            local talent_type = self:getTalentTypeFrom(talent_type_id)
-                            local first_talent = talent_type.talents[1]
-
-                            if first_talent.id ~= learned_talent_id and first_talent.base_no_unlearn_last ~= nil then
-                                first_talent.no_unlearn_last = first_talent.base_no_unlearn_last
-                            end
-                        end
-                    end
-                end
-            -- If we have two or more points in relevant talents, mark all of them as unlearnable
-            elseif talents_types_ids_group.resolved == 1 then
-                for talent_type_id, known in pairs(self.talents_types) do
-                    if known and talents_types_ids_group.applies_to_talent_type_id(talent_type_id) then
-                        local talent_type = self:getTalentTypeFrom(talent_type_id)
-                        local first_talent = talent_type.talents[1]
-
-                        if first_talent.base_no_unlearn_last ~= nil then
-                            first_talent.no_unlearn_last = first_talent.base_no_unlearn_last
-                        end
-                    end
-                end
-            end
-
-            talents_types_ids_group.resolved = talents_types_ids_group.resolved + 1
-        end
-    end
-
-    return retval
-end
-
-
-local base_unlearnTalent = _M.unlearnTalent
-function _M:unlearnTalent(unlearned_talent_id, nb)
-    local retval = base_unlearnTalent(self, unlearned_talent_id, nb)
-
-    if retval and self.resourceful_randventurer then
-        local unlearned_talent = self:getTalentFromId(unlearned_talent_id)
-        local unlearned_talent_type_id = unlearned_talent.type[1]
-
-        local talents_types_ids_group = nil
-        for _, group in ipairs(self.resourceful_randventurer.talents_types_ids_groups) do
-            if group.applies_to_talent_type_id(unlearned_talent_type_id) then
-                talents_types_ids_group = group
-                break
-            end
-        end
-
-        if talents_types_ids_group then
-            if talents_types_ids_group.resolved == 1 then
-                -- Unlearn the chosen group of talents
-                for _, talent_id in ipairs(talents_types_ids_group.chosen) do
-                    base_unlearnTalent(self, talent_id)
-                end
-
-                -- Mark all relevant talents as non-unlearnable
-                for talent_type_id, known in pairs(self.talents_types) do
-                    if known and talents_types_ids_group.applies_to_talent_type_id(talent_type_id) then
-                        local talent_type = self:getTalentTypeFrom(talent_type_id)
-                        local first_talent = talent_type.talents[1]
-
-                        if first_talent.base_no_unlearn_last == nil then
-                            first_talent.base_no_unlearn_last = first_talent.no_unlearn_last
-                        end
-                        first_talent.no_unlearn_last = true
-                    end
-                end
-            -- If we're left at one point of relevant talents, revert the unlearnability state of all non-known, but mark the remaining one as unlearnable
-            elseif talents_types_ids_group.resolved == 2 then
-                for talent_type_id, known in pairs(self.talents_types) do
-                    if known and talents_types_ids_group.applies_to_talent_type_id(talent_type_id) then
-                        local talent_type = self:getTalentTypeFrom(talent_type_id)
-                        local first_talent = talent_type.talents[1]
-                        
-                        if self:knowTalent(first_talent.id) then
-                            if first_talent.base_no_unlearn_last == nil then
-                                first_talent.base_no_unlearn_last = first_talent.no_unlearn_last
-                            end
-                            first_talent.no_unlearn_last = true
-                        else
-                            if first_talent.base_no_unlearn_last ~= nil then
-                                first_talent.no_unlearn_last = first_talent.base_no_unlearn_last
-                            end
-                        end
-                    end
-                end
-            end
-
-            talents_types_ids_group.resolved = talents_types_ids_group.resolved - 1
-        end
-    end
-
-    return retval
-end
-
-
 local base_learnTalentType = _M.learnTalentType
 function _M:learnTalentType(learned_talent_type_id, v)
     local retval = base_learnTalentType(self, learned_talent_type_id, v)
@@ -227,16 +54,16 @@ function _M:learnTalentType(learned_talent_type_id, v)
             self.resourceful_randventurer.steamtech_resolved = true
         -- Handle other resources
         else
-            local talents_types_ids_group = nil
-            for _, group in ipairs(self.resourceful_randventurer.talents_types_ids_groups) do
-                if group.applies_to_talent_type_id(learned_talent_type_id) then
-                    talents_types_ids_group = group
+            local talents_types_resolver = nil
+            for _, resolver in ipairs(self.resourceful_randventurer.talents_types_resolvers) do
+                if resolver.applies_to_talent_type_id(learned_talent_type_id) then
+                    talents_types_resolver = group
                     break
                 end
             end
 
-            if talents_types_ids_group and talents_types_ids_group.resolved == 0 then
-                local talents_ids_groups = talents_types_ids_group.talents_ids_groups
+            if talents_types_resolver and talents_types_resolver.resolved == 0 then
+                local talents_ids_groups = talents_types_resolver.talents_ids_groups
 
                 for _, talents_ids_group in ipairs(talents_ids_groups) do
                     -- Check if the player knows all talent types of a group
@@ -258,7 +85,7 @@ function _M:learnTalentType(learned_talent_type_id, v)
                     if knows_all_talent_types() then
                         -- Mark all other modified not-unlearnable talents as unlearnable
                         for talent_type_id, known in pairs(self.talents_types) do
-                            if known and talents_types_ids_group.applies_to_talent_type_id(talent_type_id) then
+                            if known and talents_types_resolver.applies_to_talent_type_id(talent_type_id) then
                                 local talent_type = self:getTalentTypeFrom(talent_type_id)
                                 local first_talent = talent_type.talents[1]
 
@@ -268,13 +95,13 @@ function _M:learnTalentType(learned_talent_type_id, v)
                             end
                         end
 
-                        talents_types_ids_group.resolved = talents_types_ids_group.resolved + 1
+                        talents_types_resolver.resolved = talents_types_resolver.resolved + 1
                         break
                     end
                 end
 
                 -- Otherwise, if the category isn't resolved, mark the first talent of the learned type as unlearnable
-                if talents_types_ids_group.resolved == 0 then
+                if talents_types_resolver.resolved == 0 then
                     local learned_talent_type = self:getTalentTypeFrom(learned_talent_type_id)
                     local first_talent = learned_talent_type.talents[1]
                     first_talent.base_no_unlearn_last = first_talent.no_unlearn_last or false
