@@ -11,7 +11,7 @@ The first time a steamtech tree is learned, the tinker escort quest will be auto
 When a first-of-its-kind talent which uses equilibrium, souls or insanity is learned, a relevant random resource-generation talent or set of talents will be learned.
 - These are only given if not already known and if you don't know their tree(s).
 - They're only eligible if they pass the non-level, non-stats checks. For example, non-Dwarves won't be granted Stone Warden talents.
-- The first-of-its-kind talent learned in this manner will become non-unlearnable, i.e. you won't be able to unlearn it.
+- The first-of-its-kind talent learned in this manner is non-unlearnable, i.e. you won't be able to unlearn it.
 - The randomness takes the seed into account.
 
 The possible granted talents/talent groups are as follows:
