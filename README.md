@@ -1,4 +1,4 @@
-# Restful Wanderers
+# Resourceful Wanderers
 
 Help Wanderers make use of trees which are otherwise hard or impossible to use due to insufficient or non-existent resource generation.
 
