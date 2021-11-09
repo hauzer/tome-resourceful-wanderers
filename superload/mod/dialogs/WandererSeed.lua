@@ -167,6 +167,9 @@ function _M:makeWanderer()
         self.actor:randventurerLearn(call.what, call.silent)
     end
 
+    -- Thanks to rexorcorum for reminding me about this :)
+    self.actor:learnTalent('T_SHOOT', true)
+
     self.finish()
 
     return retval

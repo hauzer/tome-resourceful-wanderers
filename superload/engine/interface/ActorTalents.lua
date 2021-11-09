@@ -26,16 +26,50 @@ function _M:learnTalentType(learned_talent_type_id, v)
     
             -- The player hasn't encountered the Tinker escort
             if not seen_steamtech_escort then
-                -- Give the player a basic steam implant
-                local implant = resolvers.resolveObject(self, {
-                    type='scroll',
-                    subtype='implant',
-                    name='steam generator implant',
-                    base_list='mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
-                    autoreq=true,
-                    ego_chance=-1000
-                })
-                implant:identify(true)
+                -- Give the player some basic steamtech items
+                local items = {
+                    {
+                        amount = 2,
+                        data = {
+                            type='scroll',
+                            subtype='implant',
+                            name='steam generator implant',
+                            base_list='mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
+                            autoreq=true,
+                            ego_chance=-1000
+                        }
+                    },
+                    {
+                        amount = 2,
+                        data = {
+                            type='weapon',
+                            subtype='steamsaw',
+                            name='iron steamsaw',
+                            base_list='mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
+                            autoreq=true,
+                            ego_chance=-1000
+                        }
+                    },
+                    {
+                        amount = 2,
+                        data = {
+                            type='weapon',
+                            subtype='steamgun',
+                            name='iron steamgun',
+                            base_list='mod.class.Object:/data-orcs/general/objects/steamgun.lua',
+                            autoreq=true,
+                            ego_chance=-1000
+                        }
+                    }
+                }
+
+                for _, item in ipairs(items) do
+                    for i = 1, item.amount do
+                        object = resolvers.resolveObject(self, item.data)
+                        object.__transmo = true
+                        object:identify(true)
+                    end
+                end
 
                 -- Mark the Tinker escort as seen
                 table.insert(game.state.escorts_seen, 'steamtech')
@@ -44,7 +78,7 @@ function _M:learnTalentType(learned_talent_type_id, v)
                 local base_simplePopup = Dialog.simplePopup
                 Dialog.simplePopup = function(self, title, text, fct, no_leave)
                     -- Modify the dialogue a bit
-                    text = _t'Suddenly, a vapour cloud appears, and a person steps out. "You\'re exactly who I\'m looking for!" ' .. text .. _t' The cloud dissipates along with her as she steps back. She also left you with a device apparently able to produce vapours in a similar fashion.'
+                    text = _t'Suddenly, a vapour cloud appears, and a person steps out. "You\'re exactly who I\'m looking for!" ' .. text .. _t' The cloud dissipates along with her as she steps back. The only thing left is a bag, in which you find several interesting devices.'
                     return base_simplePopup(self, title, text, fct, no_leave)
                 end
                 EscortRewards:listRewards().steamtech.special[1].action(nil, self, function(_, _, _, _, _, _) end)
@@ -57,7 +91,7 @@ function _M:learnTalentType(learned_talent_type_id, v)
             local talents_types_resolver = nil
             for _, resolver in ipairs(self.resourceful_randventurer.talents_types_resolvers) do
                 if resolver.applies_to_talent_type_id(learned_talent_type_id) then
-                    talents_types_resolver = group
+                    talents_types_resolver = resolver
                     break
                 end
             end
@@ -65,13 +99,13 @@ function _M:learnTalentType(learned_talent_type_id, v)
             if talents_types_resolver and talents_types_resolver.resolved == 0 then
                 local talents_ids_groups = talents_types_resolver.talents_ids_groups
 
+                -- Check if the player knows all talent types of a group
                 for _, talents_ids_group in ipairs(talents_ids_groups) do
-                    -- Check if the player knows all talent types of a group
-                    local knows_all_talent_types = function()
+                    local function knows_all_talent_types()
                         for _, talent_id in ipairs(talents_ids_group) do
                             local talent = self:getTalentFromId(talent_id)
                             local talent_type_id = talent.type[1]
-                            
+
                             if not self:knowTalentType(talent_type_id) then
                                 -- One of the talent types of a group is not known to the player
                                 return false
@@ -83,7 +117,7 @@ function _M:learnTalentType(learned_talent_type_id, v)
 
                     -- The player has learned all of the talent types of a group; this category is resolved
                     if knows_all_talent_types() then
-                        -- Mark all other modified not-unlearnable talents as unlearnable
+                        -- Restore the non-unlearnability of other talents which use the same resource
                         for talent_type_id, known in pairs(self.talents_types) do
                             if known and talents_types_resolver.applies_to_talent_type_id(talent_type_id) then
                                 local talent_type = self:getTalentTypeFrom(talent_type_id)
@@ -95,7 +129,7 @@ function _M:learnTalentType(learned_talent_type_id, v)
                             end
                         end
 
-                        talents_types_resolver.resolved = talents_types_resolver.resolved + 1
+                        talents_types_resolver.resolved = 100
                         break
                     end
                 end

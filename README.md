@@ -2,16 +2,20 @@
 
 Help Wanderers make use of trees which are otherwise hard or impossible to use due to insufficient or non-existent resource generation.
 
+## General
+
+Every Wanderer now knows the Shoot talent from the get-go, and starts with iron mail armour.
+
 ## Steamtech
 
-The first time a steamtech tree is learned, the tinker escort quest will be automatically resolved and a steam generator implant will be added to the inventory.
+The first time a steamtech tree is learned, the tinker escort quest will be automatically resolved. Also, two steam generator implants, two iron steamsaws and two iron steamguns will be added to the inventory.
 
 ## Equilibrium, Souls, Insanity
 
-When a first-of-its-kind talent which uses equilibrium, souls or insanity is learned, a relevant random resource-generation talent or set of talents will be learned.
-- These are only given if not already known and if you don't know their tree(s).
-- They're only eligible if they pass the non-level, non-stats checks. For example, non-Dwarves won't be granted Stone Warden talents.
-- The first-of-its-kind talent learned in this manner is non-unlearnable, i.e. you won't be able to unlearn it.
+When a first-of-its-kind talent which uses equilibrium, souls or insanity is learned, a relevant random resource-generation talent or a set of talents will be learned as well.
+- These are only given if you don't already know a relevant resource-generating talent or a tree containing one.
+- Only talents which pass the non-level, non-stats checks are eligible. For example, non-Dwarves won't be granted Stone Warden talents.
+- The first-of-its-kind talent you yourself learn is non-unlearnable, i.e. you won't be able to unlearn it.
 - The randomness takes the seed into account.
 
 The possible granted talents/talent groups are as follows:
