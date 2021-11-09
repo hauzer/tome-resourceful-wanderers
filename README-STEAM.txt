@@ -2,7 +2,7 @@ Help Wanderers make use of trees which are otherwise hard or impossible to use d
 
 [h1]General[/h1]
 
-Every Wanderer now knows the Shoot talent from the get-go, and starts with iron mail armour.
+Every Wanderer now knows the Shoot talent from the get-go, and starts with iron mail armour in addition to everything else.
 
 [h1]Steamtech[/h1]
 
