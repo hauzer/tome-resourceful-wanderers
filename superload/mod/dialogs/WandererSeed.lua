@@ -112,9 +112,6 @@ function _M:makeWanderer()
             end,
             talents_ids_groups = {
                 {
-                    'T_DISEASED_TONGUE'
-                },
-                {
                     'T_WORM_THAT_WALKS',
                     'T_WORM_THAT_STABS'
                 },

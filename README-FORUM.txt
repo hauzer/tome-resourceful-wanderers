@@ -44,7 +44,6 @@ The possible granted talents/talent groups are as follows:
 
 [i][size=120]Insanity[/size][/i]
 [list]
-[*]Diseased Tongue
 [*]Worm That Walks and Foul Convergence
 [*]Carrion Feet
 [*]Digest
