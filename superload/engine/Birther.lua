@@ -10,7 +10,6 @@ function _M:newBirthDescriptor(descriptor)
                     type='armor',
                     subtype='heavy',
                     name='iron mail armour',
-                    ego_chance=-1000,
                     ego_chance=-1000
                 })
             end

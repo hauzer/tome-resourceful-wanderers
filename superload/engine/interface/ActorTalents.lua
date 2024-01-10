@@ -1,151 +1,187 @@
 _M = loadPrevious(...)
 
 
-local EscortRewards = require('mod.class.EscortRewards')
-local Dialog = require('engine.ui.Dialog')
+-- Make talents in wanderer categories able to be learned in any order and without other original category-specific requirements
+function _M:with_freestanding_resourceful_talent(talent, callback)
+    local resourceful_wanderers = self.hauzer.resourceful_wanderers
 
+    for _, resourceful_talent_type in ipairs(resourceful_wanderers.talent_types) do
+        if self:knowTalentType(resourceful_talent_type.name) then
+            for _, resourceful_talent_id in ipairs(resourceful_talent_type.talent_ids) do
+                if resourceful_talent_id == talent.id then
+                    local orig_type = talent.type
 
-local base_learnTalentType = _M.learnTalentType
-function _M:learnTalentType(learned_talent_type_id, v)
-    local retval = base_learnTalentType(self, learned_talent_type_id, v)
-
-    if retval and self.resourceful_randventurer then
-        local learned_category_id = learned_talent_type_id:gsub('/.*', '')
-
-        -- Handle steam
-        if learned_category_id == 'steamtech' and not self.resourceful_randventurer.steamtech_resolved then
-            -- Check if the player has seen the Tinker escort
-            game.state.escorts_seen = game.state.escorts_seen or {}
-            local seen_steamtech_escort = false
-            for _, escort in ipairs(game.state.escorts_seen) do
-                if escort == 'steamtech' then
-                    seen_steamtech_escort = true
-                    break
-                end
-            end
-    
-            -- The player hasn't encountered the Tinker escort
-            if not seen_steamtech_escort then
-                -- Give the player some basic steamtech items
-                local items = {
-                    {
-                        amount = 2,
-                        data = {
-                            type='scroll',
-                            subtype='implant',
-                            name='steam generator implant',
-                            base_list='mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
-                            autoreq=true,
-                            ego_chance=-1000
-                        }
-                    },
-                    {
-                        amount = 2,
-                        data = {
-                            type='weapon',
-                            subtype='steamsaw',
-                            name='iron steamsaw',
-                            base_list='mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
-                            autoreq=true,
-                            ego_chance=-1000
-                        }
-                    },
-                    {
-                        amount = 2,
-                        data = {
-                            type='weapon',
-                            subtype='steamgun',
-                            name='iron steamgun',
-                            base_list='mod.class.Object:/data-orcs/general/objects/steamgun.lua',
-                            autoreq=true,
-                            ego_chance=-1000
-                        }
+                    talent.type = {
+                        resourceful_talent_type.name,
+                        0
                     }
-                }
 
-                for _, item in ipairs(items) do
-                    for i = 1, item.amount do
-                        object = resolvers.resolveObject(self, item.data)
-                        object.__transmo = true
-                        object:identify(true)
-                    end
-                end
+                    local retval = callback()
 
-                -- Mark the Tinker escort as seen
-                table.insert(game.state.escorts_seen, 'steamtech')
+                    talent.type = orig_type
 
-                -- Trigger the Tinker escort award
-                local base_simplePopup = Dialog.simplePopup
-                Dialog.simplePopup = function(self, title, text, fct, no_leave)
-                    -- Modify the dialogue a bit
-                    text = _t'Suddenly, a vapour cloud appears, and a person steps out. "You\'re exactly who I\'m looking for!" ' .. text .. _t' The cloud dissipates along with her as she steps back. The only thing left is a bag, in which you find several interesting devices.'
-                    return base_simplePopup(self, title, text, fct, no_leave)
-                end
-                EscortRewards:listRewards().steamtech.special[1].action(nil, self, function(_, _, _, _, _, _) end)
-                Dialog.simplePopup = base_simplePopup
-            end
-
-            self.resourceful_randventurer.steamtech_resolved = true
-        -- Handle other resources
-        else
-            local talents_types_resolver = nil
-            for _, resolver in ipairs(self.resourceful_randventurer.talents_types_resolvers) do
-                if resolver.applies_to_talent_type_id(learned_talent_type_id) then
-                    talents_types_resolver = resolver
-                    break
-                end
-            end
-
-            if talents_types_resolver and talents_types_resolver.resolved == 0 then
-                local talents_ids_groups = talents_types_resolver.talents_ids_groups
-
-                -- Check if the player knows all talent types of a group
-                for _, talents_ids_group in ipairs(talents_ids_groups) do
-                    local function knows_all_talent_types()
-                        for _, talent_id in ipairs(talents_ids_group) do
-                            local talent = self:getTalentFromId(talent_id)
-                            local talent_type_id = talent.type[1]
-
-                            if not self:knowTalentType(talent_type_id) then
-                                -- One of the talent types of a group is not known to the player
-                                return false
-                            end
-                        end
-
-                        return true
-                    end
-
-                    -- The player has learned all of the talent types of a group; this category is resolved
-                    if knows_all_talent_types() then
-                        -- Restore the non-unlearnability of other talents which use the same resource
-                        for talent_type_id, known in pairs(self.talents_types) do
-                            if known and talents_types_resolver.applies_to_talent_type_id(talent_type_id) then
-                                local talent_type = self:getTalentTypeFrom(talent_type_id)
-                                local first_talent = talent_type.talents[1]
-
-                                if first_talent.base_no_unlearn_last then
-                                    first_talent.no_unlearn_last = first_talent.base_no_unlearn_last
-                                end
-                            end
-                        end
-
-                        talents_types_resolver.resolved = 100
-                        break
-                    end
-                end
-
-                -- Otherwise, if the category isn't resolved, mark the first talent of the learned type as unlearnable
-                if talents_types_resolver.resolved == 0 then
-                    local learned_talent_type = self:getTalentTypeFrom(learned_talent_type_id)
-                    local first_talent = learned_talent_type.talents[1]
-                    first_talent.base_no_unlearn_last = first_talent.no_unlearn_last or false
-                    first_talent.no_unlearn_last = true
+                    return retval
                 end
             end
         end
     end
 
-    return retval
+    return callback()
+end
+
+local base_learnTalentType = _M.learnTalentType
+function _M:learnTalentType(tt, v)
+    local resourceful_wanderers = self.hauzer.resourceful_wanderers
+    if not resourceful_wanderers then
+        return base_learnTalentType(self, tt, v)
+    end
+
+    if tt:gsub('/.*', '') ~= 'wanderer' then
+        for _, resourceful_talent_type in ipairs(resourceful_wanderers.talent_types) do
+            if resourceful_talent_type.does_support_talent_type_id(tt) then
+                -- If the area hasn't been covered, cover it (usually means learning a wanderer category)
+                if not resourceful_wanderers.areas_covered[resourceful_talent_type.area] then
+                    base_learnTalentType(self, resourceful_talent_type.name, false)
+                    resourceful_wanderers.areas_covered[resourceful_talent_type.area] = true
+                    
+                    -- Handle steam-specific stuff
+                    if resourceful_talent_type.area == 'steam' then
+                        self:learnTalent('T_CREATE_TINKER', true)
+
+                        -- Give the player some basic steamtech items
+                        local items = {
+                            {
+                                amount = 1,
+                                data = {
+                                    defined='APE',
+                                    base_list='mod.class.Object:/data-orcs/general/objects/quest-artifacts.lua'
+                                }
+                            },
+                            {
+                                amount = 2,
+                                data = {
+                                    type='scroll',
+                                    subtype='implant',
+                                    name='steam generator implant',
+                                    base_list='mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
+                                    autoreq=true,
+                                    ego_chance=-1000
+                                }
+                            },
+                            {
+                                amount = 2,
+                                data = {
+                                    type='weapon',
+                                    subtype='steamsaw',
+                                    name='iron steamsaw',
+                                    base_list='mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
+                                    autoreq=true,
+                                    ego_chance=-1000
+                                }
+                            },
+                            {
+                                amount = 2,
+                                data = {
+                                    type='weapon',
+                                    subtype='steamgun',
+                                    name='iron steamgun',
+                                    base_list='mod.class.Object:/data-orcs/general/objects/steamgun.lua',
+                                    autoreq=true,
+                                    ego_chance=-1000
+                                }
+                            }
+                        }
+
+                        for _, item in ipairs(items) do
+                            for i = 1, item.amount do
+                                local object = resolvers.resolveObject(self, item.data)
+                                object.__transmo = true
+                                object:identify(true)
+                            end
+                        end
+                    end
+                end
+
+                -- If the player learned a category which contains a wanderer talent, remove it from the wanderer category
+                for _, talent in ipairs(self.talents_types_def[tt].talents) do
+                    local resourceful_talent_type_talents = self.talents_types_def[resourceful_talent_type.name].talents
+                    local index_to_remove = -1
+                    local count = 0
+                    for i, resourceful_talent in ipairs(resourceful_talent_type_talents) do
+                        if index_to_remove == -1 and talent.id == resourceful_talent.id then
+                            index_to_remove = i
+
+                            -- Remove the talent from the wanderer category definition table
+                            local index_to_remove_j = -1
+                            for j, talent in ipairs(resourceful_talent_type.talent_ids) do
+                                if resourceful_talent.id == talent.id then
+                                    index_to_remove_j = j
+                                    break
+                                end
+                            end
+
+                            if index_to_remove_j ~= -1 then
+                                table.remove(resourceful_talent_type.talents, index_to_remove_j)
+                            end
+
+                            -- Remove the talent from the wanderer talents table
+                            index_to_remove_j = -1
+                            for j, talent_id in ipairs(resourceful_wanderers.talent_ids) do
+                                if resourceful_talent.id == talent_id then
+                                    index_to_remove_j = j
+                                    break
+                                end
+                            end
+
+                            if index_to_remove_j ~= -1 then
+                                table.remove(resourceful_wanderers.talent_ids, index_to_remove_j)
+                            end
+                        else
+                            count = count + 1
+                        end
+                    end
+
+                    if index_to_remove ~= -1 then
+                        table.remove(resourceful_talent_type_talents, index_to_remove)
+
+                        -- If the wanderer category doesn't have any more talents, remove it and refund the category point if it was spent
+                        if count == 0 then
+                            if self.talents_types[resourceful_talent_type.name] == true then
+                                self.unused_talent_types = self.unused_talent_types + 1
+                            end
+
+                            self.talents_types[resourceful_talent_type.name] = nil
+                            self.changed = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return base_learnTalentType(self, tt, v)
+end
+
+local base_canLearnTalent = _M.canLearnTalent
+function _M:canLearnTalent(t, offset, ignore_special)
+    if not self.hauzer.resourceful_wanderers then
+        return base_canLearnTalent(self, t, offset, ignore_special)
+    end
+
+    return self:with_freestanding_resourceful_talent(t, function()
+        return base_canLearnTalent(self, t, offset, ignore_special)
+    end)
+end
+
+local base_getTalentReqDesc = _M.getTalentReqDesc
+function _M:getTalentReqDesc(t_id, levmod)
+    if not self.hauzer.resourceful_wanderers then
+        return base_getTalentReqDesc(self, t_id, levmod)
+    end
+
+    return self:with_freestanding_resourceful_talent(self.talents_def[t_id], function()
+        return base_getTalentReqDesc(self, t_id, levmod)
+    end)
 end
 
 
