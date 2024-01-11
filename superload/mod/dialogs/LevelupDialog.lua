@@ -13,12 +13,9 @@ function _M:learnType(tt, v)
 
     if v then
         -- Wanderer categories can't be improved
-        for _, resourceful_talent_type in ipairs(resourceful_wanderers.talent_types) do
-            if resourceful_talent_type.name == tt and self.actor:knowTalentType(tt) then
-                self:subtleMessage(_t"Impossible", _t"You cannot improve a Wanderer category mastery!", subtleMessageWarningColor)
-
-                return
-            end
+        if resourceful_wanderers:knows_talent_type_id(tt) then
+            self:subtleMessage(_t"Impossible", _t"You cannot improve a Wanderer category mastery!", subtleMessageWarningColor)
+            return
         end
     end
 
