@@ -96,9 +96,7 @@ function _M:setup_resourceful_wanderers()
                     'T_IMPENDING_DOOM',
                     {
                         id = 'T_RAZE',
-                        addons = {
-                            'ashes-urhrok'
-                        }
+                        addon = 'ashes-urhrok'
                     }
                 },
                 own_remove_treshold = 1,
@@ -147,9 +145,7 @@ function _M:setup_resourceful_wanderers()
                     'wanderer/mutant'
                 },
                 area = 'insanity',
-                addons = {
-                    'cults'
-                },
+                addon = 'cults',
                 talents = {
                     'T_MUTATED_HAND',
                     'T_DIGEST',
@@ -191,9 +187,7 @@ function _M:setup_resourceful_wanderers()
                     'wanderer/nihilist'
                 },
                 area = 'entropy',
-                addons = {
-                    'cults'
-                },
+                addon = 'cults',
                 talents = {
                     'T_NETHERBLAST',
                     'T_RIFT_CUTTER',
@@ -217,9 +211,7 @@ function _M:setup_resourceful_wanderers()
                     'wanderer/journeyman'
                 },
                 area = 'steam',
-                addons = {
-                    'orcs'
-                },
+                addon = 'orcs',
                 generic = true,
                 talents = {
                     'T_THERAPEUTICS',
@@ -329,6 +321,35 @@ function _M:setup_resourceful_wanderers()
                 does_support_talent_type_id = function(talent_type_id)
                     return talent_type_id == 'chronomancy/spellbinding'
                 end
+            },
+            {
+                name = 'wanderer/incinerator',
+                area = 'corruption/heart-of-fire',
+                addon = 'ashes-urhrok',
+                signature_talent_id = 'T_INCINERATING_BLOWS',
+                talents = {
+                    'T_DRAINING_ASSAULT',
+                    'T_FIERY_GRASP',
+                    'T_RECKLESS_STRIKE',
+                    'T_SHARE_THE_PAIN',
+                    'T_FEARSCAPE_SHIFT',
+                    'T_CAUTERIZE_SPIRIT',
+                    'T_INFERNAL_BREATH',
+                    'T_FEARSCAPE_AURA',
+                    'T_OBLITERATING_SMASH',
+                    'T_DETONATING_CHARGE',
+                    'T_VORACIOUS_BLADE'
+                },
+                max_talents = 3,
+                own_remove_treshold = 0,
+                descriptions = {
+                    _t'Didn\'t I have this deja vu already? Deja-deja vu?',
+                    _t'Very strange that these clocks are all showing different incorrect times. Again.',
+                    _t'Is that... me?!'
+                },
+                does_support_talent_type_id = function(talent_type_id)
+                    return talent_type_id == 'corruption/heart-of-fire'
+                end
             }
         }
 
@@ -337,6 +358,11 @@ function _M:setup_resourceful_wanderers()
         for _, talent_type in ipairs(talent_types) do
             -- Set area as not covered
             self.areas_covered[talent_type.area] = false
+
+            if talent_type.addon then
+                talent_type.addons = { talent_type.addon }
+                talent_type.addon = nil
+            end
 
             if talent_type.names then
                 table.shuffle(talent_type.names)
@@ -387,9 +413,19 @@ function _M:setup_resourceful_wanderers()
                 }
 
                 local talents_to_keep = { }
+
+                if talent_type.signature_talent_id then
+                    table.insert(talents_to_keep, talent_type.signature_talent_id)
+                end
+
                 for _, talent in ipairs(talent_type.talents) do
                     -- Don't use talents whose addon requirements aren't met
                     local talent_has_required_addons = true
+                    if talent.addon then
+                        talent.addons = { talent.addon }
+                        talent.addon = nil
+                    end
+
                     if talent.addons then
                         for _, addon in ipairs(talent.addons) do
                             if not Game:isAddonActive(addon) then
@@ -524,10 +560,11 @@ function _M:setup_resourceful_wanderers()
             -- If the wanderer category dries up, remove it and refund the category and talent points if any were spent
             if
                 talent_type.own_remove_treshold ~= nil and count <= talent_type.own_remove_treshold or
-                talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold == 0
+                talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold == 0 or
+                talent_type.signature_talent_id == talent_id
             then
                 local talents_removed_string = ''
-                for i, talent in ipairs(talent_type.talents) do
+                for _, talent in ipairs(talent_type.talents) do
                     local talent_id = self:get_talent_id(talent)
 
                     local talent_def = self.actor.talents_def[talent_id]
