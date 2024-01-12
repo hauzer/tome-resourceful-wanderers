@@ -92,11 +92,15 @@ function _M:setup_resourceful_wanderers()
                 },
                 area = 'souls',
                 talents = {
-                    'T_SOUL_LEECH',
+                    {
+                        id = 'T_SOUL_LEECH',
+                        signature = true
+                    },
                     'T_IMPENDING_DOOM',
                     {
                         id = 'T_RAZE',
-                        addon = 'ashes-urhrok'
+                        addon = 'ashes-urhrok',
+                        signature = true
                     }
                 },
                 own_remove_treshold = 1,
@@ -326,8 +330,11 @@ function _M:setup_resourceful_wanderers()
                 name = 'wanderer/incinerator',
                 area = 'corruption/heart-of-fire',
                 addon = 'ashes-urhrok',
-                signature_talent = 'T_INCINERATING_BLOWS',
                 talents = {
+                    {
+                        id = 'T_INCINERATING_BLOWS',
+                        signature = true
+                    },
                     'T_FIERY_GRASP',
                     'T_FEARSCAPE_SHIFT',
                     'T_CAUTERIZE_SPIRIT',
@@ -499,74 +506,71 @@ function _M:setup_resourceful_wanderers()
             end
 
             if not do_ignore then
-                local index_to_remove = -1
-                local count = 0
-
-                -- If the player learned a category which contains a wanderer talent, remove it from the wanderer category
-                for i, talent in ipairs(talent_type.talents) do
-                    if index_to_remove == -1 and self:get_talent_id(talent) == talent_id_to_disown then
-                        index_to_remove = i
-                    end
-
-                    count = count + 1
-                end
-
-                if index_to_remove ~= -1 then
-                    local talents_types_def = self.actor.talents_types_def[talent_type.name]
-                    local talent_def_to_remove = talents_types_def.talents[index_to_remove]
-
-                    if self:knows_talent_type_id(talent_type.name) then
-                        local talent_type_name = tstring {
-                            {"font", "bold"},
-                                _t(talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
-                                " / " ..
-                                talent_type.name:gsub(".*/", ""):capitalize(),
-                            {"font", "normal"}
-                        }
-
-                        local talent_def_to_remove_name = tstring {
-                            {"font", "bold"},
-                            talent_def_to_remove.name,
-                            {"font", "normal"}
-                        }
-
-                        game.log(
-                            '#GOLD#Your understanding of #LIGHT_BLUE#%s#GOLD# becomes deeper. ' ..
-                            'The talent has been removed from #LIGHT_BLUE#%s#GOLD# since you learned its original category.',
-                            tostring(talent_def_to_remove_name),
-                            tostring(talent_type_name)
-                        )
-                    end
-
-                    table.remove(talent_type.talents, index_to_remove)
-                    table.remove(talents_types_def.talents, index_to_remove)
-
-                    if talent_type.disown_remove_treshold ~= nil then
-                        talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
-                    end
-                end
-
                 if talent_type.sticky_talent == talent_id_to_disown then
                     talent_type.sticky_talent = nil
+                end
+
+                -- If the player learned a category which contains a wanderer talent, remove it from the wanderer category
+                local is_signature = false
+                for i, talent in ipairs(talent_type.talents) do
+                    if self:get_talent_id(talent) == talent_id_to_disown then
+                        local talents_types_def = self.actor.talents_types_def[talent_type.name]
+
+                        if talent.signature then
+                            is_signature = true
+                        end
+
+                        if self:knows_talent_type_id(talent_type.name) then
+                            local talent_type_name = tstring {
+                                {"font", "bold"},
+                                    _t(talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
+                                    " / " ..
+                                    talent_type.name:gsub(".*/", ""):capitalize(),
+                                {"font", "normal"}
+                            }
+    
+                            local talent_def_to_remove_name = tstring {
+                                {"font", "bold"},
+                                talents_types_def.talents[i].name,
+                                {"font", "normal"}
+                            }
+    
+                            game.log(
+                                '#GOLD#Your understanding of #LIGHT_BLUE#%s#GOLD# becomes deeper. ' ..
+                                'The talent has been removed from #LIGHT_BLUE#%s#GOLD# since you learned its original category.',
+                                tostring(talent_def_to_remove_name),
+                                tostring(talent_type_name)
+                            )
+                        end
+    
+                        table.remove(talent_type.talents, i)
+                        table.remove(talents_types_def.talents, i)
+    
+                        if talent_type.disown_remove_treshold ~= nil then
+                            talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
+                        end
+
+                        break
+                    end
                 end
 
                 -- If the wanderer category dries up, remove it and refund the category and talent points if any were spent
                 if
                     (
                         (
-                            talent_type.own_remove_treshold ~= nil and count <= talent_type.own_remove_treshold or
+                            talent_type.own_remove_treshold ~= nil and #talent_type.talents <= talent_type.own_remove_treshold or
                             talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold == 0
                         ) and
                         talent_type.sticky_talent == nil
                     ) or
-                    talent_type.signature_talent == talent_id_to_disown
+                    is_signature
                 then
                     -- Attach the signature talent to another eligible wanderer category as a sticky talent
-                    if talent_type.signature_talent == talent_id_to_disown then
+                    if is_signature then
                         for _, new_signature_talent_type in ipairs(self.talent_types) do
                             for _, talent in ipairs(new_signature_talent_type.talents) do
-                                if self:get_talent_id(talent) == talent_type.signature_talent then
-                                    new_signature_talent_type.sticky_talent = talent_type.signature_talent
+                                if self:get_talent_id(talent) == talent_id_to_disown then
+                                    new_signature_talent_type.sticky_talent = talent_id_to_disown
                                 end
                             end
                         end
@@ -702,21 +706,31 @@ function _M:setup_resourceful_wanderers()
         if not self.areas_covered[supporting_talent_type.area] then
             local log_message = '#GOLD#You begin to intuit a few things about the world as you learn #LIGHT_BLUE#%s'
 
+            -- Signature talents have priority
+            local non_signature_talents = { }
             local talents_to_keep = { }
-            if supporting_talent_type.signature_talent then
-                table.insert(talents_to_keep, supporting_talent_type.signature_talent)
-            end
-
-            for _, talent_to_keep in ipairs(supporting_talent_type.talents) do
-                table.insert(talents_to_keep, talent_to_keep)
-
-                if #talents_to_keep == supporting_talent_type.max_talents then
-                    break
+            for _, talent in ipairs(supporting_talent_type.talents) do
+                if talent.signature then
+                    supporting_talent_type.signature_talents = supporting_talent_type.signature_talents or { }
+                    table.insert(supporting_talent_type.signature_talents, talent)
+                    table.insert(talents_to_keep, talent)
+                else
+                    table.insert(non_signature_talents, talent)
                 end
             end
 
+            for _, talent in ipairs(non_signature_talents) do
+                if #talents_to_keep == supporting_talent_type.max_talents then
+                    break
+                end
+
+                table.insert(talents_to_keep, talent)
+            end
+
+            supporting_talent_type.talents = talents_to_keep
+
             -- Sort talents in category tree according to required level
-            table.sort(talents_to_keep, function(talent_a, talent_b)
+            table.sort(supporting_talent_type.talents, function(talent_a, talent_b)
                 local talent_a_id = self:get_talent_id(talent_a)
                 local talent_b_id = self:get_talent_id(talent_b)
 
@@ -737,14 +751,12 @@ function _M:setup_resourceful_wanderers()
                 return talent_a_level < talent_b_level
             end)
 
-            for _, talent in ipairs(talents_to_keep) do
+            for _, talent in ipairs(supporting_talent_type.talents) do
                 local talent_id = self:get_talent_id(talent)
                 local talent_def = self.actor.talents_def[talent_id]
 
                 table.insert(self.actor.talents_types_def[supporting_talent_type.name].talents, talent_def)
             end
-
-            supporting_talent_type.talents = talents_to_keep
 
             self.actor:learnTalentType(supporting_talent_type.name, false)
             self.actor.talents_types_mastery[supporting_talent_type.name] = -0.2
