@@ -326,29 +326,44 @@ function _M:setup_resourceful_wanderers()
                 name = 'wanderer/incinerator',
                 area = 'corruption/heart-of-fire',
                 addon = 'ashes-urhrok',
-                signature_talent_id = 'T_INCINERATING_BLOWS',
+                signature_talent = 'T_INCINERATING_BLOWS',
                 talents = {
-                    'T_DRAINING_ASSAULT',
                     'T_FIERY_GRASP',
-                    'T_RECKLESS_STRIKE',
-                    'T_SHARE_THE_PAIN',
                     'T_FEARSCAPE_SHIFT',
                     'T_CAUTERIZE_SPIRIT',
-                    'T_INFERNAL_BREATH',
-                    'T_FEARSCAPE_AURA',
-                    'T_OBLITERATING_SMASH',
-                    'T_DETONATING_CHARGE',
-                    'T_VORACIOUS_BLADE'
+                    'T_INFERNAL_BREATH_DOOM',
+                    'T_FEARSCAPE_AURA'
                 },
                 max_talents = 3,
-                own_remove_treshold = 0,
                 descriptions = {
-                    _t'Didn\'t I have this deja vu already? Deja-deja vu?',
-                    _t'Very strange that these clocks are all showing different incorrect times. Again.',
-                    _t'Is that... me?!'
+                    _t'Everything you touch seems to go up in blazes!',
+                    _t'Your hands are warm, hot, they burn!',
+                    _t'You... must... release... the fire.'
                 },
                 does_support_talent_type_id = function(talent_type_id)
                     return talent_type_id == 'corruption/heart-of-fire'
+                end
+            },
+            {
+                name = 'wanderer/destroyer',
+                area = 'corruption/wrath',
+                addon = 'ashes-urhrok',
+                talents = {
+                    'T_DRAINING_ASSAULT',
+                    'T_RECKLESS_STRIKE',
+                    'T_ABDUCTION',
+                    'T_INCINERATING_BLOWS',
+                    'T_FEARSCAPE_AURA'
+                },
+                max_talents = 4,
+                own_remove_treshold = 2,
+                descriptions = {
+                    _t'You\'ve never been more vital. You just feel the need to take it out on something, or someone.',
+                    _t'Muscles ache from bulging, release the pain!',
+                    _t'Something drives you to DESTROY!'
+                },
+                does_support_talent_type_id = function(talent_type_id)
+                    return talent_type_id == 'corruption/wrath'
                 end
             }
         }
@@ -391,7 +406,7 @@ function _M:setup_resourceful_wanderers()
 
         -- Create wanderer categories definitions
         self.talent_types = { }
-        for talent_type_i, talent_type in ipairs(talent_types) do
+        for _, talent_type in ipairs(talent_types) do
             -- Don't use categories whose addon requirements aren't met
             local talent_type_has_required_addons = true
             if talent_type.addons then
@@ -414,10 +429,6 @@ function _M:setup_resourceful_wanderers()
 
                 local talents_to_keep = { }
 
-                if talent_type.signature_talent_id then
-                    table.insert(talents_to_keep, talent_type.signature_talent_id)
-                end
-
                 for _, talent in ipairs(talent_type.talents) do
                     -- Don't use talents whose addon requirements aren't met
                     local talent_has_required_addons = true
@@ -437,40 +448,7 @@ function _M:setup_resourceful_wanderers()
 
                     if talent_has_required_addons then
                         table.insert(talents_to_keep, talent)
-
-                        if #talents_to_keep == talent_type.max_talents then
-                            break
-                        end
                     end
-                end
-
-                -- Sort talents in category tree according to required level
-                table.sort(talents_to_keep, function(talent_a, talent_b)
-                    local talent_a_id = self:get_talent_id(talent_a)
-                    local talent_b_id = self:get_talent_id(talent_b)
-
-                    local talent_a_def = self.actor.talents_def[talent_a_id]
-                    local talent_b_def = self.actor.talents_def[talent_b_id]
-
-                    local talent_a_level = 0
-                    local talent_b_level = 0
-
-                    if talent_a_def.require.level then
-                        talent_a_level = util.getval(talent_a_def.require.level, 1)
-                    end
-
-                    if talent_b_def.require.level then
-                        talent_b_level = util.getval(talent_b_def.require.level, 1)
-                    end
-
-                    return talent_a_level < talent_b_level
-                end)
-
-                for _, talent in ipairs(talents_to_keep) do
-                    local talent_id = self:get_talent_id(talent)
-                    local talent_def = self.actor.talents_def[talent_id]
-
-                    table.insert(self.actor.talents_types_def[talent_type.name].talents, talent_def)
                 end
 
                 talent_type.talents = talents_to_keep
@@ -507,115 +485,165 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Does the addon currently manage the given talent?
-    function resourceful_wanderers:disown_talent_id(talent_id)
+    function resourceful_wanderers:disown_talent_id(talent_id_to_disown, talent_types_to_ignore)
         local talent_types_to_keep = { }
         for _, talent_type in ipairs(self.talent_types) do
-            local index_to_remove = -1
-            local count = 0
-
-            -- If the player learned a category which contains a wanderer talent, remove it from the wanderer category
-            for i, talent in ipairs(talent_type.talents) do
-                if index_to_remove == -1 and self:get_talent_id(talent) == talent_id then
-                    index_to_remove = i
-                end
-
-                count = count + 1
-            end
-
-            if index_to_remove ~= -1 then
-                local talents_types_def = self.actor.talents_types_def[talent_type.name]
-                local talent_def_to_remove = talents_types_def.talents[index_to_remove]
-
-                if self:knows_talent_type_id(talent_type.name) then
-                    local talent_type_name = tstring {
-                        {"font", "bold"},
-                            _t(talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
-                            " / " ..
-                            talent_type.name:gsub(".*/", ""):capitalize(),
-                        {"font", "normal"}
-                    }
-
-                    local talent_def_to_remove_name = tstring {
-                        {"font", "bold"},
-                        talent_def_to_remove.name,
-                        {"font", "normal"}
-                    }
-
-                    game.log(
-                        '#GOLD#Your understanding of #LIGHT_BLUE#%s#GOLD# becomes deeper. ' ..
-                        'The talent has been removed from #LIGHT_BLUE#%s#GOLD# since you learned its original category.',
-                        tostring(talent_def_to_remove_name),
-                        tostring(talent_type_name)
-                    )
-                end
-
-                table.remove(talent_type.talents, index_to_remove)
-                table.remove(talents_types_def.talents, index_to_remove)
-
-                if talent_type.disown_remove_treshold ~= nil then
-                    talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
+            local do_ignore = false
+            if talent_types_to_ignore then
+                for _, talent_type_to_ignore in ipairs(talent_types_to_ignore) do
+                    if talent_type_to_ignore == talent_type.name then
+                        do_ignore = true
+                        break
+                    end
                 end
             end
 
-            -- If the wanderer category dries up, remove it and refund the category and talent points if any were spent
-            if
-                talent_type.own_remove_treshold ~= nil and count <= talent_type.own_remove_treshold or
-                talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold == 0 or
-                talent_type.signature_talent_id == talent_id
-            then
-                local talents_removed_string = ''
-                for _, talent in ipairs(talent_type.talents) do
-                    local talent_id = self:get_talent_id(talent)
+            if not do_ignore then
+                local index_to_remove = -1
+                local count = 0
 
-                    local talent_def = self.actor.talents_def[talent_id]
-                    if talent_def.generic == true then
-                        self.actor.unused_generics = self.actor.unused_generics + (self.actor.talents[talent_id] or 0)
-                    else
-                        self.actor.unused_talents = self.actor.unused_talents + (self.actor.talents[talent_id] or 0)
+                -- If the player learned a category which contains a wanderer talent, remove it from the wanderer category
+                for i, talent in ipairs(talent_type.talents) do
+                    if index_to_remove == -1 and self:get_talent_id(talent) == talent_id_to_disown then
+                        index_to_remove = i
                     end
 
-                    self.actor:unlearnTalentFull(talent_def.id)
+                    count = count + 1
+                end
 
-                    local talent_removed_string = ''
-                    if talents_removed_string ~= '' then
-                        talent_removed_string = talent_removed_string .. '#GOLD#, '
+                if index_to_remove ~= -1 then
+                    local talents_types_def = self.actor.talents_types_def[talent_type.name]
+                    local talent_def_to_remove = talents_types_def.talents[index_to_remove]
+
+                    if self:knows_talent_type_id(talent_type.name) then
+                        local talent_type_name = tstring {
+                            {"font", "bold"},
+                                _t(talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
+                                " / " ..
+                                talent_type.name:gsub(".*/", ""):capitalize(),
+                            {"font", "normal"}
+                        }
+
+                        local talent_def_to_remove_name = tstring {
+                            {"font", "bold"},
+                            talent_def_to_remove.name,
+                            {"font", "normal"}
+                        }
+
+                        game.log(
+                            '#GOLD#Your understanding of #LIGHT_BLUE#%s#GOLD# becomes deeper. ' ..
+                            'The talent has been removed from #LIGHT_BLUE#%s#GOLD# since you learned its original category.',
+                            tostring(talent_def_to_remove_name),
+                            tostring(talent_type_name)
+                        )
                     end
 
-                    local talent_name = tstring {
-                        {"font", "bold"},
-                        talent_def.name,
-                        {"font", "normal"}
-                    }
+                    table.remove(talent_type.talents, index_to_remove)
+                    table.remove(talents_types_def.talents, index_to_remove)
 
-                    talent_removed_string = talent_removed_string .. '#LIGHT_BLUE#' .. tostring(talent_name)
-                    talents_removed_string = talents_removed_string .. talent_removed_string
+                    if talent_type.disown_remove_treshold ~= nil then
+                        talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
+                    end
                 end
 
-                if self.actor.talents_types[talent_type.name] == true then
-                    self.actor.unused_talents_types = self.actor.unused_talents_types + 1
+                if talent_type.sticky_talent == talent_id_to_disown then
+                    talent_type.sticky_talent = nil
                 end
 
-                self.actor.talents_types[talent_type.name] = nil
-                self.actor.talents_types_mastery[talent_type.name] = nil
-                self.actor.changed = true
+                -- If the wanderer category dries up, remove it and refund the category and talent points if any were spent
+                if
+                    (
+                        (
+                            talent_type.own_remove_treshold ~= nil and count <= talent_type.own_remove_treshold or
+                            talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold == 0
+                        ) and
+                        talent_type.sticky_talent == nil
+                    ) or
+                    talent_type.signature_talent == talent_id_to_disown
+                then
+                    -- Attach the signature talent to another eligible wanderer category as a sticky talent
+                    if talent_type.signature_talent == talent_id_to_disown then
+                        for _, new_signature_talent_type in ipairs(self.talent_types) do
+                            for _, talent in ipairs(new_signature_talent_type.talents) do
+                                if self:get_talent_id(talent) == talent_type.signature_talent then
+                                    new_signature_talent_type.sticky_talent = talent_type.signature_talent
+                                end
+                            end
+                        end
+                    end
 
-                local log_message = '#GOLD#You solidify your knowledge of #LIGHT_BLUE#%s#GOLD# at the expense of flexibility. '
-                if talents_removed_string ~= '' then
-                    log_message = log_message .. 'You forget the category along with all of the remaining talents: ' .. talents_removed_string .. '#GOLD#. '
+                    -- Unlearn the category and all talents
+                    if self:owns_talent_type_id(talent_type.name) then
+                        local talents_removed_string = ''
+                        for _, talent in ipairs(talent_type.talents) do
+                            local talent_id = self:get_talent_id(talent)
+
+                            if self:knows_talent_type_id(talent_type.name) then
+                                local talent_removed_string = ''
+                                if talents_removed_string ~= '' then
+                                    talent_removed_string = talent_removed_string .. '#GOLD#, '
+                                end
+
+                                local talent_name = tstring {
+                                    {"font", "bold"},
+                                    talent_def.name,
+                                    {"font", "normal"}
+                                }
+
+                                talent_removed_string = talent_removed_string .. '#LIGHT_BLUE#' .. tostring(talent_name)
+                                talents_removed_string = talents_removed_string .. talent_removed_string
+                            end
+
+                            local talent_def = self.actor.talents_def[talent_id]
+                            if talent_def.generic == true then
+                                self.actor.unused_generics = self.actor.unused_generics + (self.actor.talents[talent_id] or 0)
+                            else
+                                self.actor.unused_talents = self.actor.unused_talents + (self.actor.talents[talent_id] or 0)
+                            end
+
+                            self.actor:unlearnTalentFull(talent_def.id)
+                        end
+
+                        local talent_type_name = tstring {
+                            {"font", "bold"},
+                                _t(talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
+                                " / " ..
+                                talent_type.name:gsub(".*/", ""):capitalize(),
+                            {"font", "normal"}
+                        }
+
+                        local do_log = true
+                        local log_message
+                        if self:knows_talent_type_id(talent_type.name) then
+                            log_message = '#GOLD#You solidify your knowledge of #LIGHT_BLUE#%s#GOLD# at the expense of flexibility. '
+                            if talents_removed_string ~= '' then
+                                log_message = log_message .. 'You forget the category along with all of the remaining talents: ' .. talents_removed_string .. '#GOLD#. '
+                            else
+                                log_message = log_message .. 'You forget the category. '
+                            end
+
+                            log_message = log_message .. 'Any spent talent or category points have been refunded.'
+                        elseif self.actor:knowTalentType(talent_type.name) == false then
+                            log_message = '#GOLD#Never taking an interest in #LIGHT_BLUE#%s#GOLD#, you forget all about it as if you never knew it.'
+                        else
+                            do_log = false
+                        end
+
+                        if self.actor.talents_types[talent_type.name] == true then
+                            self.actor.unused_talents_types = self.actor.unused_talents_types + 1
+                        end
+
+                        self.actor.talents_types[talent_type.name] = nil
+                        self.actor.talents_types_mastery[talent_type.name] = nil
+                        self.actor.changed = true
+
+                        if do_log then
+                            game.log(log_message, tostring(talent_type_name))
+                        end
+                    end
                 else
-                    log_message = log_message .. 'You forget the category. '
+                    table.insert(talent_types_to_keep, talent_type)
                 end
-
-                log_message = log_message .. 'Any spent talent or category points have been refunded.'
-
-                local talent_type_name = tstring {
-                    {"font", "bold"},
-                        _t(talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
-                        " / " ..
-                        talent_type.name:gsub(".*/", ""):capitalize(),
-                    {"font", "normal"}
-                }
-                game.log(log_message, tostring(talent_type_name))
             else
                 table.insert(talent_types_to_keep, talent_type)
             end
@@ -670,11 +698,55 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Cover an area
-    function resourceful_wanderers:cover_area(supporting_talent_type, learnTalentType)
+    function resourceful_wanderers:cover_area(supporting_talent_type)
         if not self.areas_covered[supporting_talent_type.area] then
             local log_message = '#GOLD#You begin to intuit a few things about the world as you learn #LIGHT_BLUE#%s'
 
-            learnTalentType(self.actor, supporting_talent_type.name, false)
+            local talents_to_keep = { }
+            if supporting_talent_type.signature_talent then
+                table.insert(talents_to_keep, supporting_talent_type.signature_talent)
+            end
+
+            for _, talent_to_keep in ipairs(supporting_talent_type.talents) do
+                table.insert(talents_to_keep, talent_to_keep)
+
+                if #talents_to_keep == supporting_talent_type.max_talents then
+                    break
+                end
+            end
+
+            -- Sort talents in category tree according to required level
+            table.sort(talents_to_keep, function(talent_a, talent_b)
+                local talent_a_id = self:get_talent_id(talent_a)
+                local talent_b_id = self:get_talent_id(talent_b)
+
+                local talent_a_def = self.actor.talents_def[talent_a_id]
+                local talent_b_def = self.actor.talents_def[talent_b_id]
+
+                local talent_a_level = 0
+                local talent_b_level = 0
+
+                if talent_a_def.require.level then
+                    talent_a_level = util.getval(talent_a_def.require.level, 1)
+                end
+
+                if talent_b_def.require.level then
+                    talent_b_level = util.getval(talent_b_def.require.level, 1)
+                end
+
+                return talent_a_level < talent_b_level
+            end)
+
+            for _, talent in ipairs(talents_to_keep) do
+                local talent_id = self:get_talent_id(talent)
+                local talent_def = self.actor.talents_def[talent_id]
+
+                table.insert(self.actor.talents_types_def[supporting_talent_type.name].talents, talent_def)
+            end
+
+            supporting_talent_type.talents = talents_to_keep
+
+            self.actor:learnTalentType(supporting_talent_type.name, false)
             self.actor.talents_types_mastery[supporting_talent_type.name] = -0.2
             self.areas_covered[supporting_talent_type.area] = true
 

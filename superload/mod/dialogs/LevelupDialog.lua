@@ -43,10 +43,10 @@ function _M:generateList()
                     end
 
                     talent.levelup_screen_break_line = i % 4 == 0 and i ~= #talent_type.talents
-                else if talent.orig_levelup_screen_break_line then
+                elseif talent.orig_levelup_screen_break_line then
                     talent.levelup_screen_break_line = talent.orig_levelup_screen_break_line
                     talent.orig_levelup_screen_break_line = nil
-                end end
+                end
             end
         end
 

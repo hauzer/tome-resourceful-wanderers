@@ -19,16 +19,15 @@ function _M:learnTalentType(tt, v)
         return base_learnTalentType(self, tt, v)
     end
 
-    if not resourceful_wanderers:owns_talent_type_id(tt) then
-        local supporting_talent_type = resourceful_wanderers:get_supporting_talent_type(tt)
-        if supporting_talent_type then
-            resourceful_wanderers:cover_area(supporting_talent_type, base_learnTalentType)
-        end
+    local supporting_talent_type = resourceful_wanderers:get_supporting_talent_type(tt)
+    if supporting_talent_type then
+        resourceful_wanderers:cover_area(supporting_talent_type)
+    end
 
-        -- If the player learned a category which contains a wanderer talent, remove it from the wanderer category, possibly removing the whole category
-        for _, talent in ipairs(self.talents_types_def[tt].talents) do
-            resourceful_wanderers:disown_talent_id(talent.id)
-        end
+    -- If the player learned a category which contains a wanderer talent, remove it from wanderer categories
+    -- (excluding the learned one), possibly removing the whole category
+    for _, talent in ipairs(self.talents_types_def[tt].talents) do
+        resourceful_wanderers:disown_talent_id(talent.id,  { tt })
     end
 
     return base_learnTalentType(self, tt, v)
