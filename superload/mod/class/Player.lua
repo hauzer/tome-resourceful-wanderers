@@ -1,6 +1,17 @@
 _M = loadPrevious(...)
 
 
+local base_init = _M.init
+function _M:init(t, no_default)
+    local retval = base_init(self, t, no_default)
+
+    if not self.hauzer then
+        self.hauzer = { }
+    end
+
+    return retval
+end
+
 local base_learnTalentType = _M.learnTalentType
 function _M:learnTalentType(tt, v)
     local resourceful_wanderers = self.hauzer.resourceful_wanderers
@@ -45,6 +56,27 @@ function _M:getTalentReqDesc(t_id, levmod)
     return resourceful_wanderers:with_freestanding_wanderer_talent(self.talents_def[t_id], function()
         return base_getTalentReqDesc(self, t_id, levmod)
     end)
+end
+
+local base_getTalentMastery = _M.getTalentMastery
+function _M:getTalentMastery(talent)
+    local resourceful_wanderers = self.hauzer.resourceful_wanderers
+    if not resourceful_wanderers then
+        return base_getTalentMastery(self, talent)
+    end
+
+    local talent_type = resourceful_wanderers:get_known_talent_type_for_talent_id(talent.id)
+    if talent_type then
+        local orig_talent_type = talent.type[1]
+        talent.type[1] = talent_type.name
+
+        local retval = base_getTalentMastery(self, talent)
+
+        talent.type[1] = orig_talent_type
+        return retval
+    end
+
+    return base_getTalentMastery(self, talent)
 end
 
 
