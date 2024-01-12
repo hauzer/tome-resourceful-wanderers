@@ -27,7 +27,7 @@ function _M:setup_resourceful_wanderers()
                     'T_ANCESTRAL_LIFE',
                     'T_HEALING_NEXUS'
                 },
-                remove_treshold = 1,
+                own_remove_treshold = 1,
                 descriptions = {
                     _t'Take the path of becoming one with all.',
                     _t'Take the path of becoming all with one.',
@@ -62,7 +62,7 @@ function _M:setup_resourceful_wanderers()
                     'T_JELLY',
                     'T_NATURE_S_DEFIANCE'
                 },
-                remove_treshold = 2,
+                own_remove_treshold = 2,
                 descriptions = {
                     _t'The forest calls out to you.',
                     _t'Mother Nature shall fight back!'
@@ -101,7 +101,7 @@ function _M:setup_resourceful_wanderers()
                         }
                     }
                 },
-                remove_treshold = 1,
+                own_remove_treshold = 1,
                 descriptions = {
                     _t'The urge to feast is becoming maddening!',
                     _t'Souls? Collect them? Why not!',
@@ -144,8 +144,7 @@ function _M:setup_resourceful_wanderers()
             {
                 names = {
                     'wanderer/madman',
-                    'wanderer/mutant',
-                    'wanderer/entropist'
+                    'wanderer/mutant'
                 },
                 area = 'insanity',
                 addons = {
@@ -161,7 +160,7 @@ function _M:setup_resourceful_wanderers()
                     'T_BLACK_MONOLITH'
                 },
                 max_talents = 4,
-                remove_treshold = 2,
+                own_remove_treshold = 2,
                 descriptions = {
                     _t'You feel -- *something* -- stirring inside of you.',
                     _t'The shadows in the corner of your eye are starting to show themselves rather frequently as of late.'
@@ -202,7 +201,7 @@ function _M:setup_resourceful_wanderers()
                     'T_POWER_OVERWHELMING'
                 },
                 max_talents = 3,
-                remove_treshold = 1,
+                own_remove_treshold = 1,
                 descriptions = {
                     _t'Let it go... let it all wash away.',
                     _t'Nothing matters anymore.'
@@ -231,7 +230,7 @@ function _M:setup_resourceful_wanderers()
                     'T_ELECTRICITY'
                 },
                 max_talents = 4,
-                remove_treshold = 0,
+                own_remove_treshold = 0,
                 descriptions = {
                     _t'Now, if I could just polarize this power converter...',
                     _t'*BANG!* *BANG!* *BANG!* Ooh, science is tough work!',
@@ -264,21 +263,73 @@ function _M:setup_resourceful_wanderers()
 
                     return talent_type_id:gsub('/.*', '') == 'steamtech'
                 end
+            },
+            {
+                names = {
+                    'wanderer/clockmaker',
+                    'wanderer/historian',
+                    'wanderer/chronologist'
+                },
+                area = 'chronomancy/spellbinding',
+                talent_trees = {
+                    {
+                        'T_WARP_BLADE',
+                        'T_BLINK_BLADE',
+                        'T_BLADE_SHEAR',
+                        'T_ARROW_STITCHING',
+                        'T_SINGULARITY_ARROW',
+                        'T_ATTENUATE',
+                        'T_REPULSION_BLAST',
+                        'T_GRAVITY_SPIKE',
+                        'T_GRAVITY_LOCUS',
+                        'T_GRAVITY_WELL',
+                        'T_DUST_TO_DUST',
+                        'T_MATERIALIZE_BARRIER',
+                        'T_SPATIAL_TETHER',
+                        'T_BANISH',
+                        'T_DIMENSIONAL_ANCHOR',
+                        'T_HASTE',
+                        'T_TIME_STOP',
+                        'T_CHRONO_TIME_SHIELD',
+                        'T_STOP',
+                        'T_STATIC_HISTORY',
+                        'T_WEAPON_FOLDING',
+                        'T_INVIGORATE',
+                        'T_BREACH',
+                        'T_WARDEN_S_FOCUS',
+                        'T_THREAD_WALK',
+                        'T_THREAD_THE_NEEDLE',
+                        'T_RETHREAD',
+                        'T_TEMPORAL_FUGUE',
+                        'T_CEASE_TO_EXIST',
+                        'T_TEMPORAL_BOLT',
+                        'T_TIME_SKIP',
+                        'T_TEMPORAL_REPRIEVE',
+                        'T_ECHOES_FROM_THE_PAST'
+                    },
+                    {
+                        generic = true,
+                        'T_PRECOGNITION',
+                        'T_CONTINGENCY',
+                        'T_SEE_THE_THREADS',
+                        'T_ENERGY_DECOMPOSITION',
+                        'T_ENERGY_ABSORPTION',
+                        'T_REDUX',
+                        'T_ENTROPY',
+                        'T_WORMHOLE'
+                    }
+                },
+                max_talents = 8,
+                disown_remove_treshold = 4,
+                descriptions = {
+                    _t'Didn\'t I have this deja vu already? Deja-deja vu?',
+                    _t'Very strange that these clocks are all showing different incorrect times. Again.',
+                    _t'Is that... me?!'
+                },
+                does_support_talent_type_id = function(talent_type_id)
+                    return talent_type_id == 'chronomancy/spellbinding'
+                end
             }
-            -- {
-            --     name = 'wanderer/chrono',
-            --     area = 'chrono',
-            --     talents = {
-            --         'T_THERAPEUTICS',
-            --         'T_CHEMISTRY',
-            --         'T_EXPLOSIVES'
-            --     },
-            --     description = _t'Now, if I could just polarize this power converter...',
-            --     does_support_talent_type_id = function(talent_type_id)
-            --         local category_id = talent_type_id:gsub('/.*', '')
-            --         return category_id == 'steamtech'
-            --     end
-            -- }
         }
 
         -- Shuffle data accoring to the seed. The seed is set to the one generated by the base makeWanderer()
@@ -292,6 +343,17 @@ function _M:setup_resourceful_wanderers()
                 talent_type.name = talent_type.names[1]
             end
 
+            if talent_type.talent_trees then
+                table.shuffle(talent_type.talent_trees)
+                talent_type.talents = talent_type.talent_trees[1]
+
+                if talent_type.talents.generic then
+                    talent_type.generic = talent_type.talents.generic
+                    talent_type.talents.generic = nil
+                end
+
+                talent_type.talent_trees = nil
+            end
             table.shuffle(talent_type.talents)
 
             if talent_type.descriptions then
@@ -381,7 +443,9 @@ function _M:setup_resourceful_wanderers()
         end
 
         -- Thanks to rexorcorum for reminding me about this :)
-        self.actor:learnTalent('T_SHOOT', true)
+        if not self.actor:knowTalent('T_SHOOT') then
+            self.actor:learnTalent('T_SHOOT', true)
+        end
     end
 
     -- Get the talent ID from the specification talent object, whether it's a string or a table
@@ -451,18 +515,30 @@ function _M:setup_resourceful_wanderers()
 
                 table.remove(talent_type.talents, index_to_remove)
                 table.remove(talents_types_def.talents, index_to_remove)
+
+                if talent_type.disown_remove_treshold ~= nil then
+                    talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
+                end
             end
 
-            if count > talent_type.remove_treshold then
-                table.insert(talent_types_to_keep, talent_type)
             -- If the wanderer category dries up, remove it and refund the category and talent points if any were spent
-            else
+            if
+                talent_type.own_remove_treshold ~= nil and count <= talent_type.own_remove_treshold or
+                talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold == 0
+            then
                 local talents_removed_string = ''
                 for i, talent in ipairs(talent_type.talents) do
-                    local talent_def = self.actor.talents_def[self:get_talent_id(talent)]
+                    local talent_id = self:get_talent_id(talent)
+
+                    local talent_def = self.actor.talents_def[talent_id]
+                    if talent_def.generic == true then
+                        self.actor.unused_generics = self.actor.unused_generics + (self.actor.talents[talent_id] or 0)
+                    else
+                        self.actor.unused_talents = self.actor.unused_talents + (self.actor.talents[talent_id] or 0)
+                    end
+
                     self.actor:unlearnTalentFull(talent_def.id)
 
-                    local talents_types_def = self.actor.talents_types_def[talent_type.name]
                     local talent_removed_string = ''
                     if talents_removed_string ~= '' then
                         talent_removed_string = talent_removed_string .. '#GOLD#, '
@@ -473,7 +549,9 @@ function _M:setup_resourceful_wanderers()
                         talent_def.name,
                         {"font", "normal"}
                     }
-                    talents_removed_string = talents_removed_string ..  '#LIGHT_BLUE#' .. tostring(talent_name)
+
+                    talent_removed_string = talent_removed_string .. '#LIGHT_BLUE#' .. tostring(talent_name)
+                    talents_removed_string = talents_removed_string .. talent_removed_string
                 end
 
                 if self.actor.talents_types[talent_type.name] == true then
@@ -501,6 +579,8 @@ function _M:setup_resourceful_wanderers()
                     {"font", "normal"}
                 }
                 game.log(log_message, tostring(talent_type_name))
+            else
+                table.insert(talent_types_to_keep, talent_type)
             end
         end
 
@@ -560,7 +640,7 @@ function _M:setup_resourceful_wanderers()
             learnTalentType(self.actor, supporting_talent_type.name, false)
             self.actor.talents_types_mastery[supporting_talent_type.name] = -0.2
             self.areas_covered[supporting_talent_type.area] = true
-            
+
             -- Handle steam-specific stuff
             if supporting_talent_type.area == 'steam' then
                 self.actor:learnTalent('T_CREATE_TINKER', true)
@@ -616,7 +696,7 @@ function _M:setup_resourceful_wanderers()
 
                 log_message = log_message .. '#GOLD#. You also find some gadgets.'
             end
-            
+
             local supporting_talent_type_name = tstring {
                 {"font", "bold"},
                     _t(supporting_talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
