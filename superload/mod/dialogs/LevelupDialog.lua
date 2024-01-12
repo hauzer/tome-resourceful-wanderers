@@ -36,20 +36,17 @@ function _M:generateList()
         if retval ~= nil then
             local talent_type = self.talents_types_def[talent_type_id]
 
-            if resourceful_wanderers:owns_talent_type_id(talent_type.type) then
-                for i, talent in ipairs(talent_type.talents) do
-                    if i % 4 == 0 and i ~= #talent_type.talents and not talent.orig_levelup_screen_break_line then
+            for i, talent in ipairs(talent_type.talents) do
+                if resourceful_wanderers:owns_talent_type_id(talent_type.type) then
+                    if not talent.orig_levelup_screen_break_line then
                         talent.orig_levelup_screen_break_line = talent.levelup_screen_break_line
-                        talent.levelup_screen_break_line = true
                     end
-                end
-            else
-                for i, talent in ipairs(talent_type.talents) do
-                    if talent.orig_levelup_screen_break_line then
-                        talent.levelup_screen_break_line = talent.orig_levelup_screen_break_line
-                        talent.orig_levelup_screen_break_line = nil
-                    end
-                end
+
+                    talent.levelup_screen_break_line = i % 4 == 0 and i ~= #talent_type.talents
+                else if talent.orig_levelup_screen_break_line then
+                    talent.levelup_screen_break_line = talent.orig_levelup_screen_break_line
+                    talent.orig_levelup_screen_break_line = nil
+                end end
             end
         end
 
