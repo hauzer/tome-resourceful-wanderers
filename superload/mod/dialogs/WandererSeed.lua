@@ -65,7 +65,8 @@ function _M:setup_resourceful_wanderers()
                 own_remove_treshold = 2,
                 descriptions = {
                     _t'The forest calls out to you.',
-                    _t'Mother Nature shall fight back!'
+                    _t'Mother Nature shall fight back!',
+                    _t'Ah! It\'s a good day to take a stroll and never come back.'
                 },
                 does_support_talent_type_id = function(talent_type_id)
                     local disallowed_talent_type_ids = {
@@ -146,7 +147,8 @@ function _M:setup_resourceful_wanderers()
             {
                 names = {
                     'wanderer/madman',
-                    'wanderer/mutant'
+                    'wanderer/mutant',
+                    'wanderer/specimen'
                 },
                 area = 'insanity',
                 addon = 'cults',
@@ -163,7 +165,8 @@ function _M:setup_resourceful_wanderers()
                 own_remove_treshold = 2,
                 descriptions = {
                     _t'You feel -- *something* -- stirring inside of you.',
-                    _t'The shadows in the corner of your eye are starting to show themselves rather frequently as of late.'
+                    _t'Hahh-ahhah!',
+                    _t'That alchemist is going to have a taste of his own medicine.'
                 },
                 does_support_talent_type_id = function(talent_type_id)
                     local disallowed_talent_type_ids = {
@@ -188,7 +191,8 @@ function _M:setup_resourceful_wanderers()
             {
                 names = {
                     'wanderer/entropist',
-                    'wanderer/nihilist'
+                    'wanderer/nihilist',
+                    'wanderer/antirealist'
                 },
                 area = 'entropy',
                 addon = 'cults',
@@ -201,8 +205,9 @@ function _M:setup_resourceful_wanderers()
                 max_talents = 3,
                 own_remove_treshold = 1,
                 descriptions = {
-                    _t'Let it go... let it all wash away.',
-                    _t'Nothing matters anymore.'
+                    _t'Reality is an illusion. Shatter it!',
+                    _t'Let the unbecoming essence of the universe wash over you...',
+                    _t'It\'s as though there\'s less of you each passing moment.'
                 },
                 does_support_talent_type_id = function(talent_type_id)
                     return talent_type_id == 'demented/oblivion'
@@ -226,7 +231,6 @@ function _M:setup_resourceful_wanderers()
                     'T_ELECTRICITY'
                 },
                 max_talents = 4,
-                own_remove_treshold = 0,
                 descriptions = {
                     _t'Now, if I could just polarize this power converter...',
                     _t'*BANG!* *BANG!* *BANG!* Ooh, science is tough work!',
@@ -371,6 +375,49 @@ function _M:setup_resourceful_wanderers()
                 },
                 does_support_talent_type_id = function(talent_type_id)
                     return talent_type_id == 'corruption/wrath'
+                end
+            },
+            {
+                names = {
+                    'wanderer/umbra',
+                    'wanderer/silhoutte',
+                    'wanderer/contour'
+                },
+                area = 'shadows',
+                talents = {
+                    {
+                        id = 'T_CALL_SHADOWS',
+                        signature = true
+                    },
+                    'T_FOCUS_SHADOWS',
+                    'T_SHADOW_SENSES',
+                    'T_SHADOWS_EMPATHY',
+                    'T_SHADOW_TRANSPOSITION',
+                    'T_SHADOW_DECOY',
+                    'T_MERGE',
+                    'T_STONE',
+                    'T_SHADOW_S_PATH',
+                    'T_CURSED_BOLT'
+                },
+                max_talents = 4,
+                descriptions = {
+                    _t'Darkness... soothing...',
+                    _t'Light scares away the friends.',
+                    _t'The shadows in the corner of your eye are starting to show themselves rather frequently as of late.'
+                },
+                does_support_talent_type_id = function(talent_type_id)
+                    local allowed_talents_types_ids = {
+                        'cursed/advanced-shadowmancy',
+                        'cursed/one-with-shadows'
+                    }
+
+                    for _, allowed_talents_type_id in ipairs(allowed_talents_types_ids) do
+                        if allowed_talents_type_id == talent_type_id then
+                            return true
+                        end
+                    end
+
+                    return false
                 end
             }
         }
@@ -558,7 +605,7 @@ function _M:setup_resourceful_wanderers()
                 if
                     (
                         (
-                            talent_type.own_remove_treshold ~= nil and #talent_type.talents <= talent_type.own_remove_treshold or
+                            (#talent_type.talents <= (talent_type.own_remove_treshold == nil and 0 or talent_type.own_remove_treshold)) or
                             talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold == 0
                         ) and
                         talent_type.sticky_talent == nil
@@ -581,6 +628,7 @@ function _M:setup_resourceful_wanderers()
                         local talents_removed_string = ''
                         for _, talent in ipairs(talent_type.talents) do
                             local talent_id = self:get_talent_id(talent)
+                            local talent_def = self.actor.talents_def[talent_id]
 
                             if self:knows_talent_type_id(talent_type.name) then
                                 local talent_removed_string = ''
@@ -598,7 +646,6 @@ function _M:setup_resourceful_wanderers()
                                 talents_removed_string = talents_removed_string .. talent_removed_string
                             end
 
-                            local talent_def = self.actor.talents_def[talent_id]
                             if talent_def.generic == true then
                                 self.actor.unused_generics = self.actor.unused_generics + (self.actor.talents[talent_id] or 0)
                             else
