@@ -16,7 +16,7 @@ function _M:setup_resourceful_wanderers()
         local talent_types = {
             {
                 names = {
-                    'wanderer/ascetic',
+                    'wanderer/recluse',
                     'wanderer/hermit',
                     'wanderer/eremite'
                 },
@@ -29,9 +29,9 @@ function _M:setup_resourceful_wanderers()
                 },
                 own_remove_treshold = 1,
                 descriptions = {
-                    _t'Take the path of becoming one with all.',
-                    _t'Take the path of becoming all with one.',
-                    _t'Take the path of becoming.',
+                    _t'Patient solitude leads to greater understanding.',
+                    _t'You never enjoyed living in the world.',
+                    _t'Give what you have, take what is offered.',
                 },
                 does_support_talent_type_id = function(talent_type_id)
                     local disallowed_talent_type_ids = {
@@ -347,9 +347,9 @@ function _M:setup_resourceful_wanderers()
                 },
                 max_talents = 3,
                 descriptions = {
-                    _t'Everything you touch seems to go up in blazes!',
-                    _t'Your hands are warm, hot, they burn!',
-                    _t'You... must... release... the fire.'
+                    _t'The smell of sulfur follows you everywhere you go.',
+                    _t'You\'re drawn to fire like a moth. Bathe in it.',
+                    _t'Set the world ablaze!'
                 },
                 does_support_talent_type_id = function(talent_type_id)
                     return talent_type_id == 'corruption/heart-of-fire'
@@ -419,7 +419,109 @@ function _M:setup_resourceful_wanderers()
 
                     return false
                 end
+            },
+            {
+                names = {
+                    'wanderer/conduit',
+                    'wanderer/electro',
+                    'wanderer/spark'
+                },
+                area = 'psionic/charged-mastery',
+                talents = {
+                    'T_CHARGED_SHIELD',
+                    'T_CHARGED_LEECH',
+                    'T_CHARGED_AURA',
+                    'T_CHARGED_STRIKE',
+                    'T_BRAIN_STORM'
+                },
+                max_talents = 4,
+                own_remove_treshold = 2,
+                descriptions = {
+                    _t'Woah, cool! You hair stands up all wavy on its own!',
+                    _t'Ouch, ouch! Dammit, everything you touch sparks!',
+                    _t'*bzzzzzzzztt* The humming just won\'t stop.'
+                },
+                does_support_talent_type_id = function(talent_type_id)
+                    return talent_type_id == 'psionic/charged-mastery'
+                end
+            },
+            {
+                names = {
+                    'wanderer/mystic',
+                    'wanderer/guru',
+                    'wanderer/ascetic'
+                },
+                area = 'psionic/kinetic-mastery',
+                talents = {
+                    'T_KINETIC_SHIELD',
+                    'T_KINETIC_LEECH',
+                    'T_KINETIC_AURA',
+                    'T_KINETIC_STRIKE',
+                    'T_MINDLASH'
+                },
+                max_talents = 4,
+                own_remove_treshold = 2,
+                descriptions = {
+                    _t'Take the path of becoming one with all.',
+                    _t'Take the path of becoming all with one.',
+                    _t'Take the path of becoming.',
+                },
+                does_support_talent_type_id = function(talent_type_id)
+                    return talent_type_id == 'psionic/kinetic-mastery'
+                end
+            },
+            {
+                names = {
+                    'wanderer/pyromaniac',
+                    'wanderer/arsonist',
+                    'wanderer/torch'
+                },
+                area = 'psionic/thermal-mastery',
+                talents = {
+                    'T_THERMAL_SHIELD',
+                    'T_THERMAL_LEECH',
+                    'T_THERMAL_AURA',
+                    'T_THERMAL_STRIKE',
+                    'T_PYROKINESIS'
+                },
+                max_talents = 4,
+                own_remove_treshold = 2,
+                descriptions = {
+                    _t'Everything you touch seems to either go up in blazes or freeze and crumble!',
+                    _t'Your hands are warm, hot, they bur-- oh wait, they\'re freezing!',
+                    _t'A strong fever is shaking you.'
+                },
+                does_support_talent_type_id = function(talent_type_id)
+                    return talent_type_id == 'psionic/thermal-mastery'
+                end
+            },
+            -- TODO: Add feedback
+            {
+                names = {
+                    'wanderer/lunatic',
+                    'wanderer/psycho',
+                    'wanderer/maniac'
+                },
+                area = 'psionic/discharge',
+                talents = {
+                    'T_MIND_SEAR',
+                    'T_PSYCHIC_LOBOTOMY',
+                    'T_SUNDER_MIND'
+                },
+                descriptions = {
+                    _t'Get them out of my head, GET THEM OUT!!',
+                    _t'Pity the confessor unfortunate enough to absolve you.',
+                    _t'In an insane world, it\'s only natural to go crazy.'
+                },
+                does_support_talent_type_id = function(talent_type_id)
+                    return talent_type_id == 'psionic/discharge'
+                end
             }
+
+            -- TODO: Organize by areas
+
+            -- cunning/called-shots (slings)
+            -- stealth: cunning/ambush
         }
 
         -- Shuffle data accoring to the seed. The seed is set to the one generated by the base makeWanderer()
