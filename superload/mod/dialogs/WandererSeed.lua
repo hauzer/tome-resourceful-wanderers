@@ -14,6 +14,32 @@ function _M:setup_resourceful_wanderers()
         -- Addon is tightly tied to the player actor
         self.actor = actor
 
+        self.talent_type_name_pools = {
+            fire = {
+                'pyromaniac',
+                'arsonist',
+                'torch'
+            },
+            electricity = {
+                'conduit',
+                'electro',
+                'spark'
+            }
+        }
+
+        self.talent_type_description_pools = {
+            fire = {
+                _t'Everything you touch seems to go up in blazes!',
+                _t'Your hands are warm, hot, they burn!',
+                _t'You... must... release... the... flame...'
+            },
+            electricity = {
+                _t'Woah, cool! You hair stands up all wavy on its own!',
+                _t'Ouch, ouch! Dammit, everything you touch sparks!',
+                _t'*bzzzzzzzztt* The humming just won\'t stop.'
+            }
+        }
+
         -- Talent type declarations
         -- These are used in multiple areas
         self.talent_type_declarations = {
@@ -142,6 +168,7 @@ function _M:setup_resourceful_wanderers()
                     'spell/age-of-dusk',
                     'spell/death',
                     'spell/dreadmaster',
+                    'spell/eradication',
                     'spell/glacial-waste',
                     'spell/grave',
                     'spell/master-necromancer',
@@ -472,25 +499,17 @@ function _M:setup_resourceful_wanderers()
             },
             ['psionic/charged-mastery'] = {
                 talent_type = {
-                    names = {
-                        'conduit',
-                        'electro',
-                        'spark'
-                    },
+                    name_pool = 'electricity',
                     talents = {
                         'T_CHARGED_SHIELD',
-                        'T_CHARGED_LEECH',
+                        'T_CHARGE_LEECH',
                         'T_CHARGED_AURA',
                         'T_CHARGED_STRIKE',
                         'T_BRAIN_STORM'
                     },
                     max_talents = 4,
                     own_remove_treshold = 2,
-                    descriptions = {
-                        _t'Woah, cool! You hair stands up all wavy on its own!',
-                        _t'Ouch, ouch! Dammit, everything you touch sparks!',
-                        _t'*bzzzzzzzztt* The humming just won\'t stop.'
-                    }
+                    description_pool = 'electricity'
                 }
             },
             ['psionic/kinetic-mastery'] = {
@@ -506,19 +525,15 @@ function _M:setup_resourceful_wanderers()
                     max_talents = 4,
                     own_remove_treshold = 2,
                     descriptions = {
-                        _t'Heey, what, did I move that cup?!',
+                        _t'Heey what, did I move that cup?!',
                         _t'Heh, funny. The rock just bounced off of me.',
-                        _t'I think my body is going to atrophy if continue doing this.'
+                        _t'I think my body is going to atrophy if I continue doing this.'
                     }
                 }
             },
             ['psionic/thermal-mastery'] = {
                 talent_type = {
-                    names = {
-                        'pyromaniac',
-                        'arsonist',
-                        'torch'
-                    },
+                    name_pool = 'fire',
                     talents = {
                         'T_THERMAL_SHIELD',
                         'T_THERMAL_LEECH',
@@ -528,11 +543,7 @@ function _M:setup_resourceful_wanderers()
                     },
                     max_talents = 4,
                     own_remove_treshold = 2,
-                    descriptions = {
-                        _t'Everything you touch seems to either go up in blazes!',
-                        _t'Your hands are warm, hot, they burn!',
-                        _t'You... must... release... the... flame...'
-                    }
+                    description_pool = 'fire'
                 }
             },
             ['psionic/discharge'] = {
@@ -599,11 +610,82 @@ function _M:setup_resourceful_wanderers()
             },
             ['spell/explosives'] = {
                 talent_type = 'stone-alchemy'
+            },
+            ['spell/aether'] = {
+                talent_type = {
+                    names = {
+                        'apprentice',
+                        'novice',
+                        'neophyte'
+                    },
+                    talents = {
+                        {
+                            id = 'T_MANATHURST',
+                            is_signature = true
+                        },
+                        {
+                            id = 'T_DISRUPTION_SHIELD',
+                            is_signature = true
+                        },
+                        'T_ARCANE_POWER',
+                        'T_ARCANE_VORTEX'
+                    },
+                    max_talents = 3,
+                    descriptions = {
+                        _t'When is this book going to get GOOD?!',
+                        _t'That\'s not the right incantation!',
+                        _t'Focus... Must focus...'
+                    }
+                }
+            },
+            ['spell/storm'] = {
+                talent_type = {
+                    name_pool = 'electricity',
+                    talents = {
+                        {
+                            id = 'T_LIGHTNING',
+                            is_signature = true
+                        },
+                        'T_CHAIN_LIGHTNING',
+                        'T_FEATHER_WIND',
+                        'T_THUNDERSTORM'
+                    },
+                    max_talents = 3,
+                    description_pool = 'electricity'
+                }
+            },
+            ['spell/wildfire'] = {
+                talent_type = {
+                    name_pool = 'fire',
+                    talents = {
+                        {
+                            id = 'T_FLAME',
+                            is_signature = true
+                        },
+                        'T_FLAMESHOCK',
+                        'T_FIREFLASH',
+                        'T_INFERNO'
+                    },
+                    max_talents = 3,
+                    description_pool = 'fire'
+                }
             }
 
+            -- TODO
+            -- spell/dreadmaster, spell/boneyard, spell/grave, spell/master-necromancer: minions
             -- cunning/called-shots (slings)
             -- stealth: cunning/ambush
         }
+
+        for _, name_pool in pairs(self.talent_type_name_pools) do
+            ---@diagnostic disable-next-line: undefined-field
+            table.shuffle(name_pool)
+        end
+
+        for _, description_pool in pairs(self.talent_type_description_pools) do
+            ---@diagnostic disable-next-line: undefined-field
+            table.shuffle(description_pool)
+        end
 
         -- Define talent types which are used in multiple areas
         local talent_types_to_keep = { }
@@ -768,6 +850,11 @@ function _M:setup_resourceful_wanderers()
             ---@diagnostic disable-next-line: undefined-field
             table.shuffle(talent_type_declaration.names)
             talent_type.name = talent_type_declaration.names[1]
+        elseif talent_type_declaration.name_pool then
+            local name_pool = self.talent_type_name_pools[talent_type_declaration.name_pool]
+            talent_type.name = name_pool[1]
+            table.remove(name_pool, 1)
+            talent_type.name_pool = nil
         else
             talent_type.name = talent_type_declaration.name
         end
@@ -794,6 +881,11 @@ function _M:setup_resourceful_wanderers()
             ---@diagnostic disable-next-line: undefined-field
             table.shuffle(talent_type_declaration.descriptions)
             talent_type.description = talent_type_declaration.descriptions[1]
+        elseif talent_type_declaration.description_pool then
+            local description_pool = self.talent_type_description_pools[talent_type_declaration.description_pool]
+            talent_type.description = description_pool[1]
+            table.remove(description_pool, 1)
+            talent_type.description_pool = nil
         else
             talent_type.description = talent_type_declaration.description
         end
@@ -1185,7 +1277,15 @@ function _M:setup_resourceful_wanderers()
                 table.insert(talents_to_keep, talent)
             end
 
+            game.log(talent_type.name .. ' BEFORE:')
+            for _, talent in ipairs(talent_type.talents) do
+                game.log('    ' .. talent.id)
+            end
             talent_type.talents = talents_to_keep
+            game.log(talent_type.name .. ' AFTER:')
+            for _, talent in ipairs(talent_type.talents) do
+                game.log('    ' .. talent.id)
+            end
 
             -- Sort talents in the talent type according to required level
             table.sort(talent_type.talents, function(talent_a, talent_b)
