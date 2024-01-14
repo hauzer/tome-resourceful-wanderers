@@ -6,611 +6,495 @@ _M = loadPrevious(...)
 
 
 function _M:setup_resourceful_wanderers()
-    game.player.hauzer.resourceful_wanderers = { }
-    local resourceful_wanderers = game.player.hauzer.resourceful_wanderers
+    local resourceful_wanderers = game.resourceful_wanderers
 
     function resourceful_wanderers:construct(actor)
+        self.is_active = true
+
+        -- Addon is tightly tied to the player actor
         self.actor = actor
 
-        -- Wanderer category specifications
-        local talent_types = {
-            {
-                names = {
-                    'wanderer/recluse',
-                    'wanderer/hermit',
-                    'wanderer/eremite'
+        -- Area declarations
+        self.area_declarations = {
+            equilibrium = {
+                cover_category = 'wild-gift',
+                ignore_talent_types = {
+                    'wild-gift/call',
+                    'wild-gift/fungus',
+                    'wild-gift/harmony'
                 },
-                area = 'equilibrium',
-                generic = true,
-                talents = {
-                    'T_MEDITATION',
-                    'T_ANCESTRAL_LIFE',
-                    'T_HEALING_NEXUS'
-                },
-                own_remove_treshold = 1,
-                descriptions = {
-                    _t'Patient solitude leads to greater understanding.',
-                    _t'You never enjoyed living in the world.',
-                    _t'Give what you have, take what is offered.',
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    local disallowed_talent_type_ids = {
-                        'wild-gift/call',
-                        'wild-gift/fungus',
-                        'wild-gift/harmony'
-                    }
-
-                    for _, disallowed_talent_type_id in ipairs(disallowed_talent_type_ids) do
-                        if disallowed_talent_type_id == talent_type_id then
-                            return false
-                        end
-                    end
-
-                    return talent_type_id:gsub('/.*', '') == 'wild-gift'
-                end
-            },
-            {
-                names = {
-                    'wanderer/wilderman',
-                    'wanderer/forager',
-                    'wanderer/beast'
-                },
-                area = 'equilibrium',
-                talents = {
-                    'T_SWALLOW',
-                    'T_MUCUS',
-                    'T_JELLY',
-                    'T_NATURE_S_DEFIANCE'
-                },
-                own_remove_treshold = 2,
-                descriptions = {
-                    _t'The forest calls out to you.',
-                    _t'Mother Nature shall fight back!',
-                    _t'Ah! It\'s a good day to take a stroll and never come back.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    local disallowed_talent_type_ids = {
-                        'wild-gift/sand-drake',
-                        'wild-gift/mucus',
-                        'wild-gift/summon-melee',
-                        'wild-gift/eyals-fury'
-                    }
-
-                    for _, disallowed_talent_type_id in ipairs(disallowed_talent_type_ids) do
-                        if disallowed_talent_type_id == talent_type_id then
-                            return false
-                        end
-                    end
-
-                    return talent_type_id:gsub('/.*', '') == 'wild-gift'
-                end
-            },
-            {
-                names = {
-                    'wanderer/soulpoacher',
-                    'wanderer/soulsnatcher',
-                    'wanderer/soulsnuffer'
-                },
-                area = 'souls',
-                talents = {
+                talent_types = {
                     {
-                        id = 'T_SOUL_LEECH',
-                        signature = true
-                    },
-                    'T_IMPENDING_DOOM',
-                    {
-                        id = 'T_RAZE',
-                        addon = 'ashes-urhrok',
-                        signature = true
-                    }
-                },
-                own_remove_treshold = 1,
-                descriptions = {
-                    _t'The urge to feast is becoming maddening!',
-                    _t'Souls? Collect them? Why not!',
-                    _t'Ah, how they all keep me company.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    local disallowed_talent_type_ids = {
-                        'spell/animus',
-                        'spell/eradication',
-                        'spell/undead-drake'
-                    }
-
-                    local allowed_talents_types_ids = {
-                        'spell/age-of-dusk',
-                        'spell/death',
-                        'spell/dreadmaster',
-                        'spell/glacial-waste',
-                        'spell/grave',
-                        'spell/master-necromancer',
-                        'spell/master-of-bones',
-                        'spell/master-of-flesh',
-                        'spell/rime-wraith'
-                    }
-        
-                    for _, disallowed_talent_type_id in ipairs(disallowed_talent_type_ids) do
-                        if disallowed_talent_type_id == talent_type_id then
-                            return false
-                        end
-                    end
-
-                    for _, allowed_talents_type_id in ipairs(allowed_talents_types_ids) do
-                        if allowed_talents_type_id == talent_type_id then
-                            return true
-                        end
-                    end
-        
-                    return false
-                end
-            },
-            {
-                names = {
-                    'wanderer/madman',
-                    'wanderer/mutant',
-                    'wanderer/specimen'
-                },
-                area = 'insanity',
-                addon = 'cults',
-                talents = {
-                    'T_MUTATED_HAND',
-                    'T_DIGEST',
-                    'T_CARRION_FEET',
-                    'T_DARK_WHISPERS',
-                    'T_TENTACLED_WINGS',
-                    'T_DECAYING_GROUNDS',
-                    'T_BLACK_MONOLITH'
-                },
-                max_talents = 4,
-                own_remove_treshold = 2,
-                descriptions = {
-                    _t'You feel -- *something* -- stirring inside of you.',
-                    _t'Hahh-ahhah!',
-                    _t'That alchemist is going to have a taste of his own medicine.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    local disallowed_talent_type_ids = {
-                        'demented/entropy',
-                        'demented/nether',
-                        'demented/tentacles',
-                        'demented/slow-death',
-                        'demented/madness',
-                        'demented/scourge-drake',
-                        'demented/oblivion'
-                    }
-
-                    for _, disallowed_talent_type_id in ipairs(disallowed_talent_type_ids) do
-                        if disallowed_talent_type_id == talent_type_id then
-                            return false
-                        end
-                    end
-
-                    return talent_type_id:gsub('/.*', '') == 'demented'
-                end
-            },
-            {
-                names = {
-                    'wanderer/entropist',
-                    'wanderer/nihilist',
-                    'wanderer/antirealist'
-                },
-                area = 'entropy',
-                addon = 'cults',
-                talents = {
-                    'T_NETHERBLAST',
-                    'T_RIFT_CUTTER',
-                    'T_SPATIAL_DISTORTION',
-                    'T_POWER_OVERWHELMING'
-                },
-                max_talents = 3,
-                own_remove_treshold = 1,
-                descriptions = {
-                    _t'Reality is an illusion. Shatter it!',
-                    _t'Let the unbecoming essence of the universe wash over you...',
-                    _t'It\'s as though there\'s less of you each passing moment.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    return talent_type_id == 'demented/oblivion'
-                end
-            },
-            {
-                names = {
-                    'wanderer/scrapper',
-                    'wanderer/technician',
-                    'wanderer/journeyman'
-                },
-                area = 'steam',
-                addon = 'orcs',
-                generic = true,
-                talents = {
-                    'T_THERAPEUTICS',
-                    'T_CHEMISTRY',
-                    'T_EXPLOSIVES',
-                    'T_SMITH',
-                    'T_MECHANICAL',
-                    'T_ELECTRICITY'
-                },
-                max_talents = 4,
-                descriptions = {
-                    _t'Now, if I could just polarize this power converter...',
-                    _t'*BANG!* *BANG!* *BANG!* Ooh, science is tough work!',
-                    _t'Maybe the old professor was onto something.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    local disallowed_talent_type_ids = {
-                        'steamtech/blacksmith',
-                        'steamtech/chemistry',
-                        'steamtech/physics'
-                    }
-
-                    local allowed_talents_types_ids = {
-                        'psionic/action-at-a-distance',
-                        'psionic/gestalt',
-                        'psionic/psionic-fog'
-                    }
-
-                    for _, disallowed_talent_type_id in ipairs(disallowed_talent_type_ids) do
-                        if disallowed_talent_type_id == talent_type_id then
-                            return false
-                        end
-                    end
-
-                    for _, allowed_talents_type_id in ipairs(allowed_talents_types_ids) do
-                        if allowed_talents_type_id == talent_type_id then
-                            return true
-                        end
-                    end
-
-                    return talent_type_id:gsub('/.*', '') == 'steamtech'
-                end
-            },
-            {
-                names = {
-                    'wanderer/clockmaker',
-                    'wanderer/historian',
-                    'wanderer/chronologist'
-                },
-                area = 'chronomancy/spellbinding',
-                talent_trees = {
-                    {
-                        'T_WARP_BLADE',
-                        'T_BLINK_BLADE',
-                        'T_BLADE_SHEAR',
-                        'T_ARROW_STITCHING',
-                        'T_SINGULARITY_ARROW',
-                        'T_ATTENUATE',
-                        'T_REPULSION_BLAST',
-                        'T_GRAVITY_SPIKE',
-                        'T_GRAVITY_LOCUS',
-                        'T_GRAVITY_WELL',
-                        'T_DUST_TO_DUST',
-                        'T_MATERIALIZE_BARRIER',
-                        'T_SPATIAL_TETHER',
-                        'T_BANISH',
-                        'T_DIMENSIONAL_ANCHOR',
-                        'T_HASTE',
-                        'T_TIME_STOP',
-                        'T_CHRONO_TIME_SHIELD',
-                        'T_STOP',
-                        'T_STATIC_HISTORY',
-                        'T_WEAPON_FOLDING',
-                        'T_INVIGORATE',
-                        'T_BREACH',
-                        'T_WARDEN_S_FOCUS',
-                        'T_THREAD_WALK',
-                        'T_THREAD_THE_NEEDLE',
-                        'T_RETHREAD',
-                        'T_TEMPORAL_FUGUE',
-                        'T_CEASE_TO_EXIST',
-                        'T_TEMPORAL_BOLT',
-                        'T_TIME_SKIP',
-                        'T_TEMPORAL_REPRIEVE',
-                        'T_ECHOES_FROM_THE_PAST'
-                    },
-                    {
+                        names = {
+                            'recluse',
+                            'hermit',
+                            'eremite'
+                        },
                         generic = true,
-                        'T_PRECOGNITION',
-                        'T_CONTINGENCY',
-                        'T_SEE_THE_THREADS',
-                        'T_ENERGY_DECOMPOSITION',
-                        'T_ENERGY_ABSORPTION',
-                        'T_REDUX',
-                        'T_ENTROPY',
-                        'T_WORMHOLE'
-                    }
-                },
-                max_talents = 8,
-                disown_remove_treshold = 4,
-                descriptions = {
-                    _t'Didn\'t I have this deja vu already? Deja-deja vu?',
-                    _t'Very strange that these clocks are all showing different incorrect times. Again.',
-                    _t'Is that... me?!'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    return talent_type_id == 'chronomancy/spellbinding'
-                end
-            },
-            {
-                name = 'wanderer/incinerator',
-                area = 'corruption/heart-of-fire',
-                addon = 'ashes-urhrok',
-                talents = {
-                    {
-                        id = 'T_INCINERATING_BLOWS',
-                        signature = true
+                        talents = {
+                            'T_MEDITATION',
+                            'T_ANCESTRAL_LIFE',
+                            'T_HEALING_NEXUS'
+                        },
+                        own_remove_treshold = 1,
+                        descriptions = {
+                            _t'Patient solitude leads to greater understanding.',
+                            _t'You never enjoyed living in the world.',
+                            _t'Give what you have, take what is offered.',
+                        }
                     },
-                    'T_FIERY_GRASP',
-                    'T_FEARSCAPE_SHIFT',
-                    'T_CAUTERIZE_SPIRIT',
-                    'T_INFERNAL_BREATH_DOOM',
-                    'T_FEARSCAPE_AURA'
-                },
-                max_talents = 3,
-                descriptions = {
-                    _t'The smell of sulfur follows you everywhere you go.',
-                    _t'You\'re drawn to fire like a moth. Bathe in it.',
-                    _t'Set the world ablaze!'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    return talent_type_id == 'corruption/heart-of-fire'
-                end
-            },
-            {
-                name = 'wanderer/destroyer',
-                area = 'corruption/wrath',
-                addon = 'ashes-urhrok',
-                talents = {
-                    'T_DRAINING_ASSAULT',
-                    'T_RECKLESS_STRIKE',
-                    'T_ABDUCTION',
-                    'T_INCINERATING_BLOWS',
-                    'T_FEARSCAPE_AURA'
-                },
-                max_talents = 4,
-                own_remove_treshold = 2,
-                descriptions = {
-                    _t'You\'ve never been more vital. You just feel the need to take it out on something, or someone.',
-                    _t'Muscles ache from bulging, release the pain!',
-                    _t'Something drives you to DESTROY!'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    return talent_type_id == 'corruption/wrath'
-                end
-            },
-            {
-                names = {
-                    'wanderer/umbra',
-                    'wanderer/silhoutte',
-                    'wanderer/contour'
-                },
-                area = 'shadows',
-                talents = {
                     {
-                        id = 'T_CALL_SHADOWS',
-                        signature = true
-                    },
-                    'T_FOCUS_SHADOWS',
-                    'T_SHADOW_SENSES',
-                    'T_SHADOWS_EMPATHY',
-                    'T_SHADOW_TRANSPOSITION',
-                    'T_SHADOW_DECOY',
-                    'T_MERGE',
-                    'T_STONE',
-                    'T_SHADOW_S_PATH',
-                    'T_CURSED_BOLT'
-                },
-                max_talents = 4,
-                descriptions = {
-                    _t'Darkness... soothing...',
-                    _t'Light scares away the friends.',
-                    _t'The shadows in the corner of your eye are starting to show themselves rather frequently as of late.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    local allowed_talents_types_ids = {
-                        'cursed/advanced-shadowmancy',
-                        'cursed/one-with-shadows'
+                        names = {
+                            'wilderman',
+                            'forager',
+                            'beast'
+                        },
+                        talents = {
+                            'T_SWALLOW',
+                            'T_MUCUS',
+                            'T_JELLY',
+                            'T_NATURE_S_DEFIANCE'
+                        },
+                        own_remove_treshold = 2,
+                        descriptions = {
+                            _t'The forest calls out to you.',
+                            _t'Mother Nature shall fight back!',
+                            _t'Ah! It\'s a good day to take a stroll and never come back.'
+                        }
                     }
-
-                    for _, allowed_talents_type_id in ipairs(allowed_talents_types_ids) do
-                        if allowed_talents_type_id == talent_type_id then
-                            return true
+                }
+            },
+            souls = {
+                cover_talent_types = {
+                    'spell/age-of-dusk',
+                    'spell/death',
+                    'spell/dreadmaster',
+                    'spell/glacial-waste',
+                    'spell/grave',
+                    'spell/master-necromancer',
+                    'spell/master-of-bones',
+                    'spell/master-of-flesh',
+                    'spell/rime-wraith'
+                },
+                talent_type = {
+                    names = {
+                        'soulpoacher',
+                        'soulsnatcher',
+                        'soulsnuffer'
+                    },
+                    talents = {
+                        {
+                            id = 'T_SOUL_LEECH',
+                            is_signature = true
+                        },
+                        'T_IMPENDING_DOOM',
+                        {
+                            id = 'T_RAZE',
+                            addon = 'ashes-urhrok',
+                            is_signature = true
+                        }
+                    },
+                    own_remove_treshold = 1,
+                    descriptions = {
+                        _t'The urge to feast is becoming maddening!',
+                        _t'Souls? Collect them? Why not!',
+                        _t'Ah, how they all keep me company.'
+                    }
+                }
+            },
+            insanity = {
+                addon = 'cults',
+                cover_category = 'demented',
+                ignore_talent_types = {
+                    'demented/entropy',
+                    'demented/nether',
+                    'demented/tentacles',
+                    'demented/slow-death',
+                    'demented/madness',
+                    'demented/scourge-drake',
+                    'demented/oblivion'
+                },
+                talent_type = {
+                    names = {
+                        'madman',
+                        'mutant',
+                        'specimen'
+                    },
+                    talents = {
+                        'T_MUTATED_HAND',
+                        'T_DIGEST',
+                        'T_CARRION_FEET',
+                        'T_DARK_WHISPERS',
+                        'T_TENTACLED_WINGS',
+                        'T_DECAYING_GROUNDS',
+                        'T_BLACK_MONOLITH'
+                    },
+                    max_talents = 4,
+                    own_remove_treshold = 2,
+                    descriptions = {
+                        _t'You feel -- *something* -- stirring inside of you.',
+                        _t'Hahh-ahhah!',
+                        _t'That alchemist is going to have a taste of his own medicine.'
+                    }
+                }
+            },
+            entropy = {
+                addon = 'cults',
+                cover_talent_type = 'demented/oblivion',
+                talent_type = {
+                    names = {
+                        'entropist',
+                        'nihilist',
+                        'antirealist'
+                    },
+                    talents = {
+                        'T_NETHERBLAST',
+                        'T_RIFT_CUTTER',
+                        'T_SPATIAL_DISTORTION',
+                        'T_POWER_OVERWHELMING'
+                    },
+                    max_talents = 3,
+                    own_remove_treshold = 1,
+                    descriptions = {
+                        _t'Reality is an illusion. Shatter it!',
+                        _t'Let the unbecoming essence of the universe wash over you...',
+                        _t'It\'s as though there\'s less of you each passing moment.'
+                    }
+                }
+            },
+            steam = {
+                addon = 'orcs',
+                cover_category = 'steamtech',
+                cover_talent_types = {
+                    'psionic/action-at-a-distance',
+                    'psionic/gestalt',
+                    'psionic/psionic-fog'
+                },
+                ignore_talent_types = {
+                    'steamtech/blacksmith',
+                    'steamtech/chemistry',
+                    'steamtech/physics'
+                },
+                talent_type = {
+                    names = {
+                        'scrapper',
+                        'technician',
+                        'journeyman'
+                    },
+                    generic = true,
+                    talents = {
+                        'T_THERAPEUTICS',
+                        'T_CHEMISTRY',
+                        'T_EXPLOSIVES',
+                        'T_SMITH',
+                        'T_MECHANICAL',
+                        'T_ELECTRICITY'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'Now, if I could just polarize this power converter...',
+                        _t'*BANG!* *BANG!* *BANG!* Ooh, science is tough work!',
+                        _t'Maybe the old professor was onto something.'
+                    },
+                    on_cover = function(self, log_message)
+                        -- Give the player some basic steamtech items
+                        local items = {
+                            {
+                                amount = 1,
+                                data = {
+                                    defined='APE',
+                                    base_list='mod.class.Object:/data-orcs/general/objects/quest-artifacts.lua'
+                                },
+                                transmogrify = false
+                            },
+                            {
+                                amount = 2,
+                                data = {
+                                    type='scroll',
+                                    subtype='implant',
+                                    name='steam generator implant',
+                                    base_list='mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
+                                    ego_chance=-1000
+                                }
+                            },
+                            {
+                                amount = 2,
+                                data = {
+                                    type='weapon',
+                                    subtype='steamsaw',
+                                    name='iron steamsaw',
+                                    base_list='mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
+                                    ego_chance=-1000
+                                }
+                            },
+                            {
+                                amount = 2,
+                                data = {
+                                    type='weapon',
+                                    subtype='steamgun',
+                                    name='iron steamgun',
+                                    base_list='mod.class.Object:/data-orcs/general/objects/steamgun.lua',
+                                    ego_chance=-1000
+                                }
+                            }
+                        }
+    
+                        for _, item in ipairs(items) do
+                            for _ = 1, item.amount do
+                                local object = resolvers.resolveObject(resourceful_wanderers.actor, item.data)
+                                if item.transmogrify ~= nil then
+                                    object.__transmo = item.transmogrify == false and nil or true
+                                else
+                                    object.__transmo = true
+                                end
+                                
+                                object:identify(true)
+                            end
                         end
-                    end
 
-                    return false
-                end
+                        log_message.data = log_message.data .. '#GOLD#. You also find some gadgets.'
+                    end
+                }
             },
-            {
-                names = {
-                    'wanderer/conduit',
-                    'wanderer/electro',
-                    'wanderer/spark'
+            ['chronomancy/spellbinding'] = {
+                talent_type = {
+                    names = {
+                        'clockmaker',
+                        'historian',
+                        'chronologist'
+                    },
+                    talent_groups = {
+                        {
+                            'T_WARP_BLADE',
+                            'T_BLINK_BLADE',
+                            'T_BLADE_SHEAR',
+                            'T_ARROW_STITCHING',
+                            'T_SINGULARITY_ARROW',
+                            'T_ATTENUATE',
+                            'T_REPULSION_BLAST',
+                            'T_GRAVITY_SPIKE',
+                            'T_GRAVITY_LOCUS',
+                            'T_GRAVITY_WELL',
+                            'T_DUST_TO_DUST',
+                            'T_MATERIALIZE_BARRIER',
+                            'T_SPATIAL_TETHER',
+                            'T_BANISH',
+                            'T_DIMENSIONAL_ANCHOR',
+                            'T_HASTE',
+                            'T_TIME_STOP',
+                            'T_CHRONO_TIME_SHIELD',
+                            'T_STOP',
+                            'T_STATIC_HISTORY',
+                            'T_WEAPON_FOLDING',
+                            'T_INVIGORATE',
+                            'T_BREACH',
+                            'T_WARDEN_S_FOCUS',
+                            'T_THREAD_WALK',
+                            'T_THREAD_THE_NEEDLE',
+                            'T_RETHREAD',
+                            'T_TEMPORAL_FUGUE',
+                            'T_CEASE_TO_EXIST',
+                            'T_TEMPORAL_BOLT',
+                            'T_TIME_SKIP',
+                            'T_TEMPORAL_REPRIEVE',
+                            'T_ECHOES_FROM_THE_PAST'
+                        },
+                        {
+                            generic = true,
+                            'T_PRECOGNITION',
+                            'T_CONTINGENCY',
+                            'T_SEE_THE_THREADS',
+                            'T_ENERGY_DECOMPOSITION',
+                            'T_ENERGY_ABSORPTION',
+                            'T_REDUX',
+                            'T_ENTROPY',
+                            'T_WORMHOLE'
+                        }
+                    },
+                    max_talents = 8,
+                    disown_remove_treshold = 4,
+                    descriptions = {
+                        _t'Didn\'t I have this deja vu already? Deja-deja vu?',
+                        _t'Very strange that these clocks are all showing different incorrect times. Again.',
+                        _t'Is that... me?!'
+                    }
                 },
-                area = 'psionic/charged-mastery',
-                talents = {
-                    'T_CHARGED_SHIELD',
-                    'T_CHARGED_LEECH',
-                    'T_CHARGED_AURA',
-                    'T_CHARGED_STRIKE',
-                    'T_BRAIN_STORM'
-                },
-                max_talents = 4,
-                own_remove_treshold = 2,
-                descriptions = {
-                    _t'Woah, cool! You hair stands up all wavy on its own!',
-                    _t'Ouch, ouch! Dammit, everything you touch sparks!',
-                    _t'*bzzzzzzzztt* The humming just won\'t stop.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    return talent_type_id == 'psionic/charged-mastery'
-                end
             },
-            {
-                names = {
-                    'wanderer/mystic',
-                    'wanderer/guru',
-                    'wanderer/ascetic'
-                },
-                area = 'psionic/kinetic-mastery',
-                talents = {
-                    'T_KINETIC_SHIELD',
-                    'T_KINETIC_LEECH',
-                    'T_KINETIC_AURA',
-                    'T_KINETIC_STRIKE',
-                    'T_MINDLASH'
-                },
-                max_talents = 4,
-                own_remove_treshold = 2,
-                descriptions = {
-                    _t'Take the path of becoming one with all.',
-                    _t'Take the path of becoming all with one.',
-                    _t'Take the path of becoming.',
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    return talent_type_id == 'psionic/kinetic-mastery'
-                end
+            ['corruption/heart-of-fire'] = {
+                addon = 'ashes-urhrok',
+                talent_type = {
+                    name = 'incinerator',
+                    talents = {
+                        {
+                            id = 'T_INCINERATING_BLOWS',
+                            is_signature = true
+                        },
+                        'T_FIERY_GRASP',
+                        'T_FEARSCAPE_SHIFT',
+                        'T_CAUTERIZE_SPIRIT',
+                        'T_INFERNAL_BREATH_DOOM',
+                        'T_FEARSCAPE_AURA'
+                    },
+                    max_talents = 3,
+                    descriptions = {
+                        _t'The smell of sulfur follows you everywhere you go.',
+                        _t'You\'re drawn to fire like a moth. Bathe in it.',
+                        _t'Set the world ablaze!'
+                    }
+                }
             },
-            {
-                names = {
-                    'wanderer/pyromaniac',
-                    'wanderer/arsonist',
-                    'wanderer/torch'
+            ['corruption/wrath'] = {
+                addon = 'ashes-urhrok',
+                talent_type = {
+                    name = 'destroyer',
+                    talents = {
+                        'T_DRAINING_ASSAULT',
+                        'T_RECKLESS_STRIKE',
+                        'T_ABDUCTION',
+                        'T_INCINERATING_BLOWS',
+                        'T_FEARSCAPE_AURA'
+                    },
+                    max_talents = 4,
+                    own_remove_treshold = 2,
+                    descriptions = {
+                        _t'You\'ve never been more vital. You just feel the need to take it out on something, or someone.',
+                        _t'Muscles ache from bulging, release the pain!',
+                        _t'Something drives you to DESTROY!'
+                    }
+                }
+            },
+            shadows = {
+                cover_talent_types = {
+                    'cursed/advanced-shadowmancy',
+                    'cursed/one-with-shadows'
                 },
-                area = 'psionic/thermal-mastery',
-                talents = {
-                    'T_THERMAL_SHIELD',
-                    'T_THERMAL_LEECH',
-                    'T_THERMAL_AURA',
-                    'T_THERMAL_STRIKE',
-                    'T_PYROKINESIS'
-                },
-                max_talents = 4,
-                own_remove_treshold = 2,
-                descriptions = {
-                    _t'Everything you touch seems to either go up in blazes or freeze and crumble!',
-                    _t'Your hands are warm, hot, they bur-- oh wait, they\'re freezing!',
-                    _t'A strong fever is shaking you.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    return talent_type_id == 'psionic/thermal-mastery'
-                end
+                talent_type = {
+                    names = {
+                        'umbra',
+                        'silhoutte',
+                        'contour'
+                    },
+                    talents = {
+                        {
+                            id = 'T_CALL_SHADOWS',
+                            is_signature = true
+                        },
+                        'T_FOCUS_SHADOWS',
+                        'T_SHADOW_SENSES',
+                        'T_SHADOWS_EMPATHY',
+                        'T_SHADOW_TRANSPOSITION',
+                        'T_SHADOW_DECOY',
+                        'T_MERGE',
+                        'T_STONE',
+                        'T_SHADOW_S_PATH',
+                        'T_CURSED_BOLT'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'Darkness... soothing...',
+                        _t'Light scares away the friends.',
+                        _t'The shadows in the corner of your eye are starting to show themselves rather frequently as of late.'
+                    }
+                }
+            },
+            ['psionic/charged-mastery'] = {
+                talent_type = {
+                    names = {
+                        'conduit',
+                        'electro',
+                        'spark'
+                    },
+                    talents = {
+                        'T_CHARGED_SHIELD',
+                        'T_CHARGED_LEECH',
+                        'T_CHARGED_AURA',
+                        'T_CHARGED_STRIKE',
+                        'T_BRAIN_STORM'
+                    },
+                    max_talents = 4,
+                    own_remove_treshold = 2,
+                    descriptions = {
+                        _t'Woah, cool! You hair stands up all wavy on its own!',
+                        _t'Ouch, ouch! Dammit, everything you touch sparks!',
+                        _t'*bzzzzzzzztt* The humming just won\'t stop.'
+                    }
+                }
+            },
+            ['psionic/kinetic-mastery'] = {
+                talent_type = {
+                    names = {
+                        'mystic',
+                        'guru',
+                        'ascetic'
+                    },
+                    talents = {
+                        'T_KINETIC_SHIELD',
+                        'T_KINETIC_LEECH',
+                        'T_KINETIC_AURA',
+                        'T_KINETIC_STRIKE',
+                        'T_MINDLASH'
+                    },
+                    max_talents = 4,
+                    own_remove_treshold = 2,
+                    descriptions = {
+                        _t'Take the path of becoming one with all.',
+                        _t'Take the path of becoming all with one.',
+                        _t'Take the path of becoming.',
+                    }
+                }
+            },
+            ['psionic/thermal-mastery'] = {
+                talent_type = {
+                    names = {
+                        'pyromaniac',
+                        'arsonist',
+                        'torch'
+                    },
+                    talents = {
+                        'T_THERMAL_SHIELD',
+                        'T_THERMAL_LEECH',
+                        'T_THERMAL_AURA',
+                        'T_THERMAL_STRIKE',
+                        'T_PYROKINESIS'
+                    },
+                    max_talents = 4,
+                    own_remove_treshold = 2,
+                    descriptions = {
+                        _t'Everything you touch seems to either go up in blazes!',
+                        _t'Your hands are warm, hot, they burn!',
+                        _t'You... must... release... the... flame...'
+                    }
+                }
             },
             -- TODO: Add feedback
-            {
-                names = {
-                    'wanderer/lunatic',
-                    'wanderer/psycho',
-                    'wanderer/maniac'
-                },
-                area = 'psionic/discharge',
-                talents = {
-                    'T_MIND_SEAR',
-                    'T_PSYCHIC_LOBOTOMY',
-                    'T_SUNDER_MIND'
-                },
-                descriptions = {
-                    _t'Get them out of my head, GET THEM OUT!!',
-                    _t'Pity the confessor unfortunate enough to absolve you.',
-                    _t'In an insane world, it\'s only natural to go crazy.'
-                },
-                does_support_talent_type_id = function(talent_type_id)
-                    return talent_type_id == 'psionic/discharge'
-                end
+            ['psionic/discharge'] = {
+                talent_type_group = {
+                    {
+                        names = {
+                            'lunatic',
+                            'psycho',
+                            'maniac'
+                        },
+                        area = 'psionic/discharge',
+                        talents = {
+                            'T_MIND_SEAR',
+                            'T_PSYCHIC_LOBOTOMY',
+                            'T_SUNDER_MIND'
+                        },
+                        descriptions = {
+                            _t'Get them out of my head, GET THEM OUT!!',
+                            _t'Pity the confessor unfortunate enough to face you.',
+                            _t'In an insane world, it\'s only natural to go crazy.'
+                        }
+                    }
+                }
             }
-
-            -- TODO: Organize by areas
 
             -- cunning/called-shots (slings)
             -- stealth: cunning/ambush
         }
 
-        -- Shuffle data accoring to the seed. The seed is set to the one generated by the base makeWanderer()
-        self.areas_covered = { }
-        for _, talent_type in ipairs(talent_types) do
-            -- Set area as not covered
-            self.areas_covered[talent_type.area] = false
-
-            if talent_type.addon then
-                talent_type.addons = { talent_type.addon }
-                talent_type.addon = nil
-            end
-
-            if talent_type.names then
-                table.shuffle(talent_type.names)
-                talent_type.name = talent_type.names[1]
-            end
-
-            if talent_type.talent_trees then
-                table.shuffle(talent_type.talent_trees)
-                talent_type.talents = talent_type.talent_trees[1]
-
-                if talent_type.talents.generic then
-                    talent_type.generic = talent_type.talents.generic
-                    talent_type.talents.generic = nil
-                end
-
-                talent_type.talent_trees = nil
-            end
-            table.shuffle(talent_type.talents)
-
-            if talent_type.descriptions then
-                table.shuffle(talent_type.descriptions)
-                talent_type.description = talent_type.descriptions[1]
-            end
-        end
-        table.shuffle(talent_types)
-
-        -- Create wanderer categories definitions
-        self.talent_types = { }
-        for _, talent_type in ipairs(talent_types) do
-            -- Don't use categories whose addon requirements aren't met
-            local talent_type_has_required_addons = true
-            if talent_type.addons then
-                for _, addon in ipairs(talent_type.addons) do
-                    if not Game:isAddonActive(addon) then
-                        talent_type_has_required_addons = false
-                        break
-                    end
-                end
-            end
-
-            if talent_type_has_required_addons then
-                ActorTalents:newTalentType {
-                    allow_random = false,
-                    type = talent_type.name,
-                    name = _t(talent_type.name:gsub('.*/', ''), 'talent type'),
-                    generic = talent_type.generic,
-                    description = talent_type.description
-                }
-
-                local talents_to_keep = { }
-
-                for _, talent in ipairs(talent_type.talents) do
-                    -- Don't use talents whose addon requirements aren't met
-                    local talent_has_required_addons = true
-                    if talent.addon then
-                        talent.addons = { talent.addon }
-                        talent.addon = nil
-                    end
-
-                    if talent.addons then
-                        for _, addon in ipairs(talent.addons) do
-                            if not Game:isAddonActive(addon) then
-                                talent_has_required_addons = false
-                                break
-                            end
-                        end
-                    end
-
-                    if talent_has_required_addons then
-                        table.insert(talents_to_keep, talent)
-                    end
-                end
-
-                talent_type.talents = talents_to_keep
-                table.insert(self.talent_types, talent_type)
-            end
-        end
+        self.areas = self.define_areas(self.area_declarations)
 
         -- Thanks to rexorcorum for reminding me about this :)
         if not self.actor:knowTalent('T_SHOOT') then
@@ -618,250 +502,550 @@ function _M:setup_resourceful_wanderers()
         end
     end
 
-    -- Get the talent ID from the specification talent object, whether it's a string or a table
-    function resourceful_wanderers:get_talent_id(talent)
-        if type(talent) == 'string' then
-            return talent
-        else
-            return talent.id
-        end
-    end
+    -- Define areas from area declarations
+    function resourceful_wanderers.define_areas(area_declarations)
+        local areas = { }
+        for area_name, area_declaration in pairs(area_declarations) do
+            -- Skip area if it doesn't meet addon requirements
+            local addons
+            if area_declaration.addon then
+                addons = { area_declaration.addon }
+            else
+                addons = area_declaration.addons or { }
+            end
 
-    -- Does the addon currently manage the given talent?
-    function resourceful_wanderers:owns_talent_id(talent_id)
-        for _, talent_type in ipairs(self.talent_types) do
-            for _, talent in ipairs(talent_type.talents) do
-                if self:get_talent_id(talent) == talent_id then
-                    return true
+            for _, addon in ipairs(addons) do
+                if not Game:isAddonActive(addon) then
+                    goto next_area_declaration
                 end
             end
+
+            local area = {
+                name = area_name,
+                is_covered = false,
+                addons = addons,
+                on_cover = area_declarations.on_cover or function(_) end
+            }
+
+            -- Normalize cover/ignore properties
+            if area_declaration.cover_category then
+                area.cover_categories = { area_declaration.cover_category }
+            else
+                area.cover_categories = area_declaration.cover_categories or { }
+            end
+
+            if area_declaration.ignore_category then
+                area.ignore_categories = { area_declaration.ignore_category }
+            else
+                area.ignore_categories = area_declaration.ignore_categories or { }
+            end
+
+            if area_declaration.cover_talent_type then
+                area.cover_talent_types = { area_declaration.cover_talent_type }
+            else
+                area.cover_talent_types = area_declaration.cover_talent_types or { }
+            end
+
+            if area_declaration.ignore_talent_type then
+                area.ignore_talent_types = { area_declaration.ignore_talent_type }
+            else
+                area.ignore_talent_types = area_declaration.ignore_talent_types or { }
+            end
+
+            if #area.cover_categories == 0 and #area.cover_talent_types == 0 then
+                table.insert(area.cover_talent_types, area.name)
+            end
+
+            -- Normalize talent properties
+            if not area_declaration.talent_type_groups then
+                if area_declaration.talent_type then
+                    area.talent_types = { resourceful_wanderers.define_talent_type(area_declaration.talent_type) }
+                elseif area_declaration.talent_types then
+                    local talent_type_group_declarations = { }
+                    for _, talent_type_declaration in ipairs(area_declaration.talent_types) do
+                        table.insert(talent_type_group_declarations, { talent_type_declaration })
+                    end
+
+                    area.talent_types = resourceful_wanderers.define_talent_types(talent_type_group_declarations)
+                elseif area_declaration.talent_type_group then
+                    area.talent_types = resourceful_wanderers.define_talent_types({ area_declaration.talent_type_group })
+                end
+            else
+                area.talent_types = resourceful_wanderers.define_talent_types(area_declaration.talent_type_groups)
+            end
+
+            -- If the area has no talents, skip it
+            if area.talent_types == nil or #area.talent_types == 0 then
+                goto next_area_declaration
+            end
+
+            ---@diagnostic disable-next-line: undefined-field
+            table.shuffle(area.talent_types)
+            table.insert(areas, area)
+
+            ::next_area_declaration::
+        end
+
+        return areas
+    end
+
+    -- Define talent types of an area from a declaration of groups of talent types
+    function resourceful_wanderers.define_talent_types(talent_type_group_declarations)
+        local talent_type_groups = { }
+        for _, talent_type_group_declaration in ipairs(talent_type_group_declarations) do
+            local talent_type_group = { }
+            for _, talent_type_declaration in ipairs(talent_type_group_declaration) do
+                table.insert(talent_type_group, resourceful_wanderers.define_talent_type(talent_type_declaration))
+            end
+
+            if talent_type_group ~= nil and #talent_type_group > 0 then
+                table.insert(talent_type_groups, talent_type_group)
+            end
+        end
+
+        if #talent_type_groups == 0 then
+            return nil
+        end
+
+        ---@diagnostic disable-next-line: undefined-field
+        table.shuffle(talent_type_groups)
+        return talent_type_groups[1]
+    end
+
+    -- Define an area talent type from a talent type declaration
+    function resourceful_wanderers.define_talent_type(talent_type_declaration)
+        -- Skip talent type if it doesn't meet addon requirements
+        local addons
+        if talent_type_declaration.addon then
+            addons = { talent_type_declaration.addon }
+        else
+            addons = talent_type_declaration.addons or { }
+        end
+
+        for _, addon in ipairs(addons) do
+            if not Game:isAddonActive(addon) then
+                return nil
+            end
+        end
+
+        local talent_type = {
+            addons = addons,
+            on_cover = talent_type_declaration.on_cover or function(_, _) end
+        }
+
+        -- Normalize declaration properties and create the talent type
+        if talent_type_declaration.names then
+            ---@diagnostic disable-next-line: undefined-field
+            table.shuffle(talent_type_declaration.names)
+            talent_type.name = talent_type_declaration.names[1]
+        else
+            talent_type.name = talent_type_declaration.name
+        end
+        talent_type.name = 'wanderer/' .. talent_type.name
+
+        talent_type.mastery = talent_type_declaration.mastery or -0.2
+        talent_type.generic = talent_type_declaration.generic ~= nil and true or false
+
+        if talent_type_declaration.talent_groups then
+            local talent_groups = talent_type_declaration.talent_groups
+            ---@diagnostic disable-next-line: undefined-field
+            table.shuffle(talent_groups)
+            talent_type.talents = talent_groups[1]
+
+            if talent_type.talents.generic then
+                talent_type.generic = talent_type.talents.generic
+                talent_type.talents.generic = nil
+            end
+        else
+            talent_type.talents = talent_type_declaration.talents
+        end
+
+        if talent_type_declaration.descriptions then
+            ---@diagnostic disable-next-line: undefined-field
+            table.shuffle(talent_type_declaration.descriptions)
+            talent_type.description = talent_type_declaration.descriptions[1]
+        else
+            talent_type.description = talent_type_declaration.description
+        end
+
+        local talents = { }
+        for _, talent_declaration in ipairs(talent_type.talents) do
+            table.insert(talents, resourceful_wanderers.define_talent(talent_declaration))
+        end
+
+        if #talents == 0 then
+            return nil
+        end
+
+        talent_type.talents = talents
+        ---@diagnostic disable-next-line: undefined-field
+        table.shuffle(talent_type.talents)
+
+        talent_type.max_talents = talent_type_declaration.max_talents or #talent_type.talents
+        talent_type.own_remove_treshold = talent_type_declaration.own_remove_treshold or 0
+        talent_type.disown_remove_treshold = talent_type_declaration.disown_remove_treshold or 100
+
+        -- Create ToME talent type definition
+        ActorTalents:newTalentType {
+            allow_random = false,
+            type = talent_type.name,
+            name = _t(talent_type.name:gsub('.*/', ''), 'talent type'),
+            generic = talent_type.generic,
+            description = talent_type.description
+        }
+
+        return talent_type
+    end
+
+    -- Define an area talent from a talent declaration
+    function resourceful_wanderers.define_talent(talent_declaration)
+        -- Don't use talents whose addon requirements aren't met
+        local addons
+        if talent_declaration.addon then
+            addons = { talent_declaration.addon }
+        else
+            addons = talent_declaration.addons or { }
+        end
+
+        for _, addon in ipairs(addons) do
+            if not Game:isAddonActive(addon) then
+                return nil
+            end
+        end
+
+        return {
+            id = talent_declaration.id or talent_declaration,
+            addons = addons,
+            is_signature = talent_declaration.is_signature or false,
+            is_sticky = talent_declaration.is_sticky or false
+        }
+    end
+
+    -- Get the area which defines the talent type
+    function resourceful_wanderers:get_talent_type_area(talent_type_id)
+        for _, area in ipairs(self.areas) do
+            for _, talent_type in ipairs(area.talent_types) do
+                if talent_type.name == talent_type_id then
+                    return area
+                end
+            end
+        end
+
+        return nil
+    end
+
+    -- Does an area define this talent type?
+    function resourceful_wanderers:is_talent_type_from_area(talent_type_id)
+        local retval = self:get_talent_type_area(talent_type_id) ~= nil
+        if retval ~= nil then
+            return retval
         end
 
         return false
     end
 
-    -- Does the addon currently manage the given talent?
-    function resourceful_wanderers:disown_talent_id(talent_id_to_disown, talent_types_to_ignore)
-        local talent_types_to_keep = { }
-        for _, talent_type in ipairs(self.talent_types) do
-            local do_ignore = false
-            if talent_types_to_ignore then
-                for _, talent_type_to_ignore in ipairs(talent_types_to_ignore) do
-                    if talent_type_to_ignore == talent_type.name then
-                        do_ignore = true
-                        break
-                    end
+    -- Returns all areas which cover the talent type
+    function resourceful_wanderers:find_covering_areas_for_talent_type(talent_type_id)
+        local areas = { }
+        for _, area in ipairs(self.areas) do
+            if area.is_covered then
+                goto next_area
+            end
+
+            for _, ignored_talent_type in ipairs(area.ignore_talent_types) do
+                if ignored_talent_type == talent_type_id then
+                    goto next_area
                 end
             end
 
-            if not do_ignore then
-                if talent_type.sticky_talent == talent_id_to_disown then
-                    talent_type.sticky_talent = nil
+            for _, ignored_category in ipairs(area.ignore_categories) do
+                if ignored_category == talent_type_id:gsub('/.*', '') then
+                    goto next_area
                 end
+            end
 
-                -- If the player learned a category which contains a wanderer talent, remove it from the wanderer category
-                local is_signature = false
-                for i, talent in ipairs(talent_type.talents) do
-                    if self:get_talent_id(talent) == talent_id_to_disown then
-                        local talents_types_def = self.actor.talents_types_def[talent_type.name]
+            for _, covered_category in ipairs(area.cover_categories) do
+                if covered_category == talent_type_id:gsub('/.*', '') then
+                    table.insert(areas, area)
+                    goto next_area
+                end
+            end
 
-                        if talent.signature then
-                            is_signature = true
-                        end
+            for _, cover_talent_type in ipairs(area.cover_talent_types) do
+                if cover_talent_type == talent_type_id then
+                    table.insert(areas, area)
+                    goto next_area
+                end
+            end
 
-                        if self:knows_talent_type_id(talent_type.name) then
-                            local talent_type_name = tstring {
-                                {"font", "bold"},
-                                    _t(talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
-                                    " / " ..
-                                    talent_type.name:gsub(".*/", ""):capitalize(),
-                                {"font", "normal"}
+            ::next_area::
+        end
+
+        return areas
+    end
+
+    -- Make the talent, if it's managed, act as if it belongs to a wanderer category for the duration of the callback
+    function resourceful_wanderers:with_managed_talent(talent, callback)
+        for _, area in ipairs(self.areas) do
+            for _, talent_type in ipairs(area.talent_types) do
+                if self.actor:knowTalentType(talent_type.name) ~= nil then
+                    for _, managed_talent in ipairs(talent_type.talents) do
+                        if talent.id == managed_talent.id then
+                            local orig_type = talent.type
+                            talent.type = {
+                                talent_type.name,
+                                0
                             }
-    
-                            local talent_def_to_remove_name = tstring {
-                                {"font", "bold"},
-                                talents_types_def.talents[i].name,
-                                {"font", "normal"}
-                            }
-    
-                            game.log(
-                                '#GOLD#Your understanding of #LIGHT_BLUE#%s#GOLD# becomes deeper. ' ..
-                                'The talent has been removed from #LIGHT_BLUE#%s#GOLD# since you learned its original category.',
-                                tostring(talent_def_to_remove_name),
-                                tostring(talent_type_name)
-                            )
+                
+                            local retval = callback()
+                
+                            talent.type = orig_type
+                            return retval
                         end
-    
-                        table.remove(talent_type.talents, i)
-                        table.remove(talents_types_def.talents, i)
-    
-                        if talent_type.disown_remove_treshold ~= nil then
-                            talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
-                        end
-
-                        break
                     end
                 end
+            end
+        end
 
-                -- If the wanderer category dries up, remove it and refund the category and talent points if any were spent
-                if
-                    (
-                        (
-                            (#talent_type.talents <= (talent_type.own_remove_treshold == nil and 0 or talent_type.own_remove_treshold)) or
-                            talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold == 0
-                        ) and
-                        talent_type.sticky_talent == nil
-                    ) or
-                    is_signature
-                then
-                    -- Attach the signature talent to another eligible wanderer category as a sticky talent
-                    if is_signature then
-                        for _, new_signature_talent_type in ipairs(self.talent_types) do
-                            for _, talent in ipairs(new_signature_talent_type.talents) do
-                                if self:get_talent_id(talent) == talent_id_to_disown then
-                                    new_signature_talent_type.sticky_talent = talent_id_to_disown
-                                end
-                            end
+        return callback()
+    end
+
+    -- Remove all talent type's talents from all areas
+    function resourceful_wanderers:unmanage_talent_type(talent_type_to_unmanage_id)
+        local talent_type_to_unmanage_area = self:get_talent_type_area(talent_type_to_unmanage_id)
+
+        local areas_to_keep = { }
+        for _, area in ipairs(self.areas) do
+            local talent_types_to_keep = { }
+            for _, talent_type in ipairs(area.talent_types) do
+                local talents_to_keep = { }
+                local tome_talents_to_keep = { }
+                local individual_talent_log_messages = { }
+                local was_signature_talent_removed = false
+                local has_sticky_talents = false
+
+                -- If the talent type to unmanage is an area talent type, don't touch anything
+                if talent_type.name == talent_type_to_unmanage_id then
+                    goto next_talent_type
+                end
+
+                -- Remove all talents of talent type to unmanage
+                for _, talent in ipairs(talent_type.talents) do
+                    for _, talent_to_unmanage in ipairs(self.actor.talents_types_def[talent_type_to_unmanage_id].talents) do
+                        if talent.id ~= talent_to_unmanage.id then
+                            goto next_talent_to_unmanage
                         end
-                    end
 
-                    -- Unlearn the category and all talents
-                    if self:owns_talent_type_id(talent_type.name) then
-                        local talents_removed_string = ''
-                        for _, talent in ipairs(talent_type.talents) do
-                            local talent_id = self:get_talent_id(talent)
-                            local talent_def = self.actor.talents_def[talent_id]
+                        local talent_def_to_remove_name = tstring {
+                            {'font', 'bold'},
+                            self.actor.talents_def[talent.id].name,
+                            {'font', 'normal'}
+                        }
 
-                            if self:knows_talent_type_id(talent_type.name) then
-                                local talent_removed_string = ''
-                                if talents_removed_string ~= '' then
-                                    talent_removed_string = talent_removed_string .. '#GOLD#, '
-                                end
-
-                                local talent_name = tstring {
-                                    {"font", "bold"},
-                                    talent_def.name,
-                                    {"font", "normal"}
-                                }
-
-                                talent_removed_string = talent_removed_string .. '#LIGHT_BLUE#' .. tostring(talent_name)
-                                talents_removed_string = talents_removed_string .. talent_removed_string
-                            end
-
-                            if talent_def.generic == true then
-                                self.actor.unused_generics = self.actor.unused_generics + (self.actor.talents[talent_id] or 0)
-                            else
-                                self.actor.unused_talents = self.actor.unused_talents + (self.actor.talents[talent_id] or 0)
-                            end
-
-                            self.actor:unlearnTalentFull(talent_def.id)
+                        local log_message
+                        if self.actor:knowTalent(talent.id) then
+                            log_message =
+                                '#GOLD#Your understanding of #LIGHT_BLUE#' ..
+                                tostring(talent_def_to_remove_name) ..
+                                '#GOLD# becomes deeper.'
+                        else
+                            log_message =
+                                '#GOLD#You readjust the angle from which you should learn #LIGHT_BLUE#' ..
+                                tostring(talent_def_to_remove_name) .. '#GOLD#.'
                         end
 
                         local talent_type_name = tstring {
-                            {"font", "bold"},
-                                _t(talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
-                                " / " ..
-                                talent_type.name:gsub(".*/", ""):capitalize(),
-                            {"font", "normal"}
+                            {'font', 'bold'},
+                                _t(talent_type.name:gsub('/.*', ''), 'talent category'):capitalize() ..
+                                ' / ' ..
+                                talent_type.name:gsub('.*/', ''):capitalize(),
+                            {'font', 'normal'}
                         }
 
-                        local do_log = true
-                        local log_message
-                        if self:knows_talent_type_id(talent_type.name) then
-                            log_message = '#GOLD#You solidify your knowledge of #LIGHT_BLUE#%s#GOLD# at the expense of flexibility. '
-                            if talents_removed_string ~= '' then
-                                log_message = log_message .. 'You forget the category along with all of the remaining talents: ' .. talents_removed_string .. '#GOLD#. '
-                            else
-                                log_message = log_message .. 'You forget the category. '
+                        local talent_type_to_unmanage_name = tstring {
+                            {'font', 'bold'},
+                                _t(talent_type_to_unmanage_id:gsub('/.*', ''), 'talent category'):capitalize() ..
+                                ' / ' ..
+                                talent_type_to_unmanage_id:gsub('.*/', ''):capitalize(),
+                            {'font', 'normal'}
+                        }
+
+                        table.insert(individual_talent_log_messages,
+                            log_message ..
+                            ' The talent has been removed from #LIGHT_BLUE#' .. tostring(talent_type_name) ..
+                            '#GOLD# since you learned its original category, #LIGHT_BLUE#' .. tostring(talent_type_to_unmanage_name)
+                        )
+
+                        -- If the talent type we're unmanaging is from an area, and the talent we're unmanaging is
+                        -- sticky in the iterating talent type, then make it sticky in the talent type we're unmanaging
+                        if talent.is_signature then
+                            if talent_type_to_unmanage_area then
+                                for _, talent_type in ipairs(talent_type_to_unmanage_area.talent_types) do
+                                    for _, talent_to_sticky in ipairs(talent_type.talents) do
+                                        if talent.id == talent_to_sticky.id then
+                                            game.log('STICKY: Added ' .. talent.id .. ' to ' .. talent_type.name)
+                                            talent_to_sticky.is_sticky = true
+                                            goto break_from_sticky
+                                        end
+                                    end
+                                end
                             end
 
-                            log_message = log_message .. 'Any spent talent or category points have been refunded.'
-                        elseif self.actor:knowTalentType(talent_type.name) == false then
-                            log_message = '#GOLD#Never taking an interest in #LIGHT_BLUE#%s#GOLD#, you forget all about it as if you never knew it.'
+                            ::break_from_sticky::
+
+                            was_signature_talent_removed = true
+                        end
+
+                        talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
+
+                        goto next_talent
+
+                        ::next_talent_to_unmanage::
+                    end
+
+                    table.insert(tome_talents_to_keep, self.actor.talents_def[talent.id])
+                    table.insert(talents_to_keep, talent)
+
+                    if talent.is_sticky then
+                        has_sticky_talents = true
+                    end
+
+                    ::next_talent::
+                end
+
+                if self.actor:knowTalentType(talent_type.name) ~= nil then
+                    self.actor.talents_types_def[talent_type.name].talents = tome_talents_to_keep
+                end
+                talent_type.talents = talents_to_keep
+
+                -- Remove the wanderer category completely if:
+                -- - It has no sticky talents and:
+                --     - A signature talent has been removed.
+                --     - Category has number of talents less then or equal to `own_remove_treshold`.
+                --     - Category has lost a number of talents more than or equal to `disown_remove_treshold`.
+                -- remove it and refund the category and talent points if any were spent
+                if
+                    (
+                        #talent_type.talents <= talent_type.own_remove_treshold or
+                        talent_type.disown_remove_treshold <= 0 or
+                        was_signature_talent_removed
+                    ) and
+                    not has_sticky_talents
+                then
+                    local talents_removed_string = ''
+                    for _, talent in ipairs(talent_type.talents) do
+                        local talent_def = self.actor.talents_def[talent.id]
+
+                        if self.actor:knowTalentType(talent_type.name) then
+                            local talent_removed_string = ''
+                            if talents_removed_string ~= '' then
+                                talent_removed_string = talent_removed_string .. '#GOLD#, '
+                            end
+
+                            local talent_name = tstring {
+                                {'font', 'bold'},
+                                talent_def.name,
+                                {'font', 'normal'}
+                            }
+
+                            talent_removed_string = talent_removed_string .. '#LIGHT_BLUE#' .. tostring(talent_name)
+                            talents_removed_string = talents_removed_string .. talent_removed_string
+                        end
+
+                        if talent_def.generic == true then
+                            self.actor.unused_generics = self.actor.unused_generics + (self.actor.talents[talent.id] or 0)
                         else
-                            do_log = false
+                            self.actor.unused_talents = self.actor.unused_talents + (self.actor.talents[talent.id] or 0)
                         end
 
-                        if self.actor.talents_types[talent_type.name] == true then
-                            self.actor.unused_talents_types = self.actor.unused_talents_types + 1
-                        end
-
-                        self.actor.talents_types[talent_type.name] = nil
-                        self.actor.talents_types_mastery[talent_type.name] = nil
-                        self.actor.changed = true
-
-                        if do_log then
-                            game.log(log_message, tostring(talent_type_name))
-                        end
+                        self.actor:unlearnTalentFull(talent_def.id)
                     end
-                else
-                    table.insert(talent_types_to_keep, talent_type)
+
+                    local talent_type_name = tstring {
+                        {'font', 'bold'},
+                            _t(talent_type.name:gsub('/.*', ''), 'talent category'):capitalize() ..
+                            ' / ' ..
+                            talent_type.name:gsub('.*/', ''):capitalize(),
+                        {'font', 'normal'}
+                    }
+
+                    local do_log = true
+                    local log_message
+                    if self.actor:knowTalentType(talent_type.name) then
+                        log_message = '#GOLD#You solidify your knowledge of #LIGHT_BLUE#%s#GOLD# at the expense of flexibility. '
+                        if talents_removed_string ~= '' then
+                            log_message = log_message .. 'You forget the category along with all of the remaining talents: ' .. talents_removed_string .. '#GOLD#.'
+                        else
+                            log_message = log_message .. 'You forget the category.'
+                        end
+
+                        log_message = log_message .. ' Any spent talent or category points have been refunded.'
+                    elseif self.actor:knowTalentType(talent_type.name) == false then
+                        log_message = '#GOLD#Never taking an interest in #LIGHT_BLUE#%s#GOLD#, you forget all about it as if you never knew it.'
+                    else
+                        do_log = false
+                    end
+
+                    if self.actor.talents_types[talent_type.name] == true then
+                        self.actor.unused_talents_types = self.actor.unused_talents_types + 1
+                    end
+
+                    self.actor.talents_types[talent_type.name] = nil
+                    self.actor.talents_types_mastery[talent_type.name] = nil
+                    self.actor.changed = true
+
+                    if do_log then
+                        game.log(log_message, tostring(talent_type_name))
+                    end
+
+                    goto next_talent_type_dont_keep
                 end
-            else
+
+                if self.actor:knowTalentType(talent_type.name) ~= nil then
+                    for _, message in ipairs(individual_talent_log_messages) do
+                        game.log(message)
+                    end
+                end
+
+                ::next_talent_type::
                 table.insert(talent_types_to_keep, talent_type)
+
+                ::next_talent_type_dont_keep::
+            end
+
+            -- Don't keep empty areas
+            area.talent_types = talent_types_to_keep
+            if #area.talent_types > 0 then
+                table.insert(areas_to_keep, area)
             end
         end
 
-        self.talent_types = talent_types_to_keep
+        self.areas = areas_to_keep
     end
 
-    -- Does the addon currently manage the given category?
-    function resourceful_wanderers:get_talent_type(talent_type_id)
-        for _, talent_type in ipairs(self.talent_types) do
-            if talent_type.name == talent_type_id then
-                return talent_type
+    -- Covers an area
+    function resourceful_wanderers:cover_area(area)
+        if area.is_covered then
+            return
+        end
+
+        area.is_covered = true
+
+        for _, talent_type in ipairs(area.talent_types) do
+            game.log(area.name .. ': ' .. talent_type.name)
+            for _, t in ipairs(talent_type.talents) do
+                game.log('    ' .. t.id)
             end
-        end
-    end
-
-    -- Does the addon currently manage the given category?
-    function resourceful_wanderers:owns_talent_type_id(talent_type_id)
-        if self:get_talent_type(talent_type_id) then
-            return true
-        end
-
-        return false
-    end
-
-    -- Actor knows a currently managed category?
-    function resourceful_wanderers:knows_talent_type_id(talent_type_id)
-        return self:owns_talent_type_id(talent_type_id) and self.actor:knowTalentType(talent_type_id)
-    end
-
-    -- Get the supporting wanderer category for the given category
-    function resourceful_wanderers:get_supporting_talent_type(talent_type_id)
-        for _, talent_type in ipairs(self.talent_types) do
-            if talent_type.does_support_talent_type_id and talent_type.does_support_talent_type_id(talent_type_id) then
-                return talent_type
+            game.log('    -----')
+            for _, t in ipairs(self.actor.talents_types_def[talent_type.name].talents) do
+                game.log('    ' .. t.id)
             end
-        end
-    end
-
-    -- Get the first known wanderer category which contains the given talent
-    function resourceful_wanderers:get_known_talent_type_for_talent_id(talent_id)
-        for _, talent_type in ipairs(self.talent_types) do
-            if self.actor:knowTalentType(talent_type.name) ~= nil then
-                for _, talent in ipairs(talent_type.talents) do
-                    if self:get_talent_id(talent) == talent_id then
-                        return talent_type
-                    end
-                end
-            end
-        end
-    end
-
-    -- Cover an area
-    function resourceful_wanderers:cover_area(supporting_talent_type)
-        if not self.areas_covered[supporting_talent_type.area] then
-            local log_message = '#GOLD#You begin to intuit a few things about the world as you learn #LIGHT_BLUE#%s'
 
             -- Signature talents have priority
             local non_signature_talents = { }
             local talents_to_keep = { }
-            for _, talent in ipairs(supporting_talent_type.talents) do
-                if talent.signature then
-                    supporting_talent_type.signature_talents = supporting_talent_type.signature_talents or { }
-                    table.insert(supporting_talent_type.signature_talents, talent)
+            for _, talent in ipairs(talent_type.talents) do
+                if talent.is_signature then
                     table.insert(talents_to_keep, talent)
                 else
                     table.insert(non_signature_talents, talent)
@@ -869,22 +1053,19 @@ function _M:setup_resourceful_wanderers()
             end
 
             for _, talent in ipairs(non_signature_talents) do
-                if #talents_to_keep == supporting_talent_type.max_talents then
+                if #talents_to_keep >= talent_type.max_talents then
                     break
                 end
 
                 table.insert(talents_to_keep, talent)
             end
 
-            supporting_talent_type.talents = talents_to_keep
+            talent_type.talents = talents_to_keep
 
-            -- Sort talents in category tree according to required level
-            table.sort(supporting_talent_type.talents, function(talent_a, talent_b)
-                local talent_a_id = self:get_talent_id(talent_a)
-                local talent_b_id = self:get_talent_id(talent_b)
-
-                local talent_a_def = self.actor.talents_def[talent_a_id]
-                local talent_b_def = self.actor.talents_def[talent_b_id]
+            -- Sort talents in the talent type according to required level
+            table.sort(talent_type.talents, function(talent_a, talent_b)
+                local talent_a_def = self.actor.talents_def[talent_a.id]
+                local talent_b_def = self.actor.talents_def[talent_b.id]
 
                 local talent_a_level = 0
                 local talent_b_level = 0
@@ -900,101 +1081,47 @@ function _M:setup_resourceful_wanderers()
                 return talent_a_level < talent_b_level
             end)
 
-            for _, talent in ipairs(supporting_talent_type.talents) do
-                local talent_id = self:get_talent_id(talent)
-                local talent_def = self.actor.talents_def[talent_id]
-
-                table.insert(self.actor.talents_types_def[supporting_talent_type.name].talents, talent_def)
-            end
-
-            self.actor:learnTalentType(supporting_talent_type.name, false)
-            self.actor.talents_types_mastery[supporting_talent_type.name] = -0.2
-            self.areas_covered[supporting_talent_type.area] = true
-
-            -- Handle steam-specific stuff
-            if supporting_talent_type.area == 'steam' then
-                self.actor:learnTalent('T_CREATE_TINKER', true)
-
-                -- Give the player some basic steamtech items
-                local items = {
-                    {
-                        amount = 1,
-                        data = {
-                            defined='APE',
-                            base_list='mod.class.Object:/data-orcs/general/objects/quest-artifacts.lua'
-                        }
-                    },
-                    {
-                        amount = 2,
-                        data = {
-                            type='scroll',
-                            subtype='implant',
-                            name='steam generator implant',
-                            base_list='mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
-                            ego_chance=-1000
-                        }
-                    },
-                    {
-                        amount = 2,
-                        data = {
-                            type='weapon',
-                            subtype='steamsaw',
-                            name='iron steamsaw',
-                            base_list='mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
-                            ego_chance=-1000
-                        }
-                    },
-                    {
-                        amount = 2,
-                        data = {
-                            type='weapon',
-                            subtype='steamgun',
-                            name='iron steamgun',
-                            base_list='mod.class.Object:/data-orcs/general/objects/steamgun.lua',
-                            ego_chance=-1000
-                        }
-                    }
-                }
-
-                for _, item in ipairs(items) do
-                    for i = 1, item.amount do
-                        local object = resolvers.resolveObject(self.actor, item.data)
-                        object.__transmo = true
-                        object:identify(true)
-                    end
+            for _, talent in ipairs(talent_type.talents) do
+                game.log(talent_type.name .. ': ' .. talent.id)
+                table.insert(self.actor.talents_types_def[talent_type.name].talents, self.actor.talents_def[talent.id])
+                for _, t in ipairs(self.actor.talents_types_def[talent_type.name].talents) do
+                    game.log('    ' .. t.id)
                 end
-
-                log_message = log_message .. '#GOLD#. You also find some gadgets.'
             end
 
-            local supporting_talent_type_name = tstring {
-                {"font", "bold"},
-                    _t(supporting_talent_type.name:gsub("/.*", ""), "talent category"):capitalize() ..
-                    " / " ..
-                    supporting_talent_type.name:gsub(".*/", ""):capitalize(),
-                {"font", "normal"}
+            self.actor.talents_types_mastery[talent_type.name] = talent_type.mastery
+            self.actor:learnTalentType(talent_type.name, false)
+
+            local talent_type_name = tstring {
+                {'font', 'bold'},
+                    _t(talent_type.name:gsub('/.*', ''), 'talent category'):capitalize() ..
+                    ' / ' ..
+                    talent_type.name:gsub('.*/', ''):capitalize(),
+                {'font', 'normal'}
             }
-            game.log(log_message, tostring(supporting_talent_type_name))
+
+            local log_message = {
+                data = '#GOLD#You begin to intuit a few things about the world as you learn #LIGHT_BLUE#' .. tostring(talent_type_name) .. '#GOLD#.'
+            }
+            talent_type:on_cover(log_message)
+
+            game.log(log_message.data)
         end
+
+        area:on_cover()
     end
 
-    -- Make talents in wanderer categories able to be learned in any order and without other original category-specific requirements
-    function resourceful_wanderers:with_freestanding_wanderer_talent(talent, callback)
-        local talent_type = self:get_known_talent_type_for_talent_id(talent.id)
-        if talent_type then
-            local orig_type = talent.type
-            talent.type = {
-                talent_type.name,
-                0
-            }
-
-            local retval = callback()
-
-            talent.type = orig_type
-            return retval
+    -- Called before the player learns a talent type
+    function resourceful_wanderers:after_learnTalentType(talent_type_id)
+        if not self.actor.talents_types_def[talent_type_id] then
+            return
         end
 
-        return callback()
+        self:unmanage_talent_type(talent_type_id)
+
+        for _, covering_area in ipairs(self:find_covering_areas_for_talent_type(talent_type_id)) do
+            self:cover_area(covering_area)
+        end
     end
 
     resourceful_wanderers:construct(game.player)

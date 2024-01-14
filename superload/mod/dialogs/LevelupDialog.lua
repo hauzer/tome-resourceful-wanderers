@@ -6,15 +6,15 @@ local subtleMessageWarningColor = { r=255, g=255, b=80 }
 
 local base_learnType = _M.learnType
 function _M:learnType(tt, v)
-    local resourceful_wanderers = game.player.hauzer.resourceful_wanderers
-    if self.actor ~= game.player or not resourceful_wanderers then
+    local resourceful_wanderers = game:get_resourceful_wanderers()
+    if self.actor ~= game.player or not resourceful_wanderers.is_active then
         return base_learnType(self, tt, v)
     end
 
     if v then
         -- Wanderer categories can't be improved
-        if resourceful_wanderers:knows_talent_type_id(tt) then
-            self:subtleMessage(_t"Impossible", _t"You cannot improve a Wanderer category mastery!", subtleMessageWarningColor)
+        if resourceful_wanderers:is_talent_type_from_area(tt) and self.actor:knowTalentType(tt) then
+            self:subtleMessage(_t'Impossible', _t'You cannot improve a Wanderer category mastery!', subtleMessageWarningColor)
             return
         end
     end
@@ -25,24 +25,24 @@ end
 
 local base_generateList = _M.generateList
 function _M:generateList()
-    local resourceful_wanderers = game.player.hauzer.resourceful_wanderers
-    if self.actor ~= game.player or not resourceful_wanderers then
-        return self:base_generateList(self)
+    local resourceful_wanderers = game:get_resourceful_wanderers()
+    if self.actor ~= game.player or not resourceful_wanderers.is_active then
+        return base_generateList(self)
     end
 
     local base_actor_knowTalentType = self.actor.knowTalentType
     self.actor.knowTalentType = function(self, talent_type_id)
         local retval = base_actor_knowTalentType(self, talent_type_id)
         if retval ~= nil then
-            local talent_type = self.talents_types_def[talent_type_id]
+            local tome_talent_type = self.talents_types_def[talent_type_id]
 
-            for i, talent in ipairs(talent_type.talents) do
-                if resourceful_wanderers:owns_talent_type_id(talent_type.type) then
+            for i, talent in ipairs(tome_talent_type.talents) do
+                if resourceful_wanderers:is_talent_type_from_area(talent_type_id) then
                     if not talent.orig_levelup_screen_break_line then
                         talent.orig_levelup_screen_break_line = talent.levelup_screen_break_line
                     end
 
-                    talent.levelup_screen_break_line = i % 4 == 0 and i ~= #talent_type.talents
+                    talent.levelup_screen_break_line = i % 4 == 0 and i ~= #tome_talent_type.talents
                 elseif talent.orig_levelup_screen_break_line then
                     talent.levelup_screen_break_line = talent.orig_levelup_screen_break_line
                     talent.orig_levelup_screen_break_line = nil

@@ -1,3 +1,5 @@
+---@diagnostic disable: lowercase-global
+
 for_module = 'tome'
 long_name = 'Resourceful Wanderers'
 short_name = 'resourceful-wanderers'
