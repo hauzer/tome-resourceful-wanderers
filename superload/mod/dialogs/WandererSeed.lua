@@ -14,6 +14,79 @@ function _M:setup_resourceful_wanderers()
         -- Addon is tightly tied to the player actor
         self.actor = actor
 
+        -- Talent type declarations
+        -- These are used in multiple areas
+        self.talent_type_declarations = {
+            ['stone-alchemy'] = {
+                names = {
+                    'jeweler',
+                    'gemologist',
+                    'crafstman'
+                },
+                is_generic = true,
+                talents = {
+                    {
+                        id = 'T_EXTRACT_GEMS',
+                        is_signature = true
+                    },
+                    {
+                        id = 'T_IMBUE_ITEM',
+                        is_signature = true
+                    },
+                    'T_GEM_PORTAL',
+                    'T_STONE_TOUCH'
+                },
+                max_talents = 3,
+                descriptions = {
+                    _t'Shiny!',
+                    _t'Let\'s see what we got in this haul.',
+                    _t'My precious...'
+                }
+            },
+            golemancy = {
+                names = {
+                    'sculptor',
+                    'carver',
+                    'idolatrol'
+                },
+                talents = {
+                    {
+                        id = 'T_GOLEM_POWER',
+                        is_signature = true
+                    },
+                    {
+                        id = 'T_GOLEM_RESILIENCE',
+                        is_signature = true
+                    },
+                    'T_INVOKE_GOLEM',
+                    'T_GOLEM_PORTAL'
+                },
+                max_talents = 3,
+                descriptions = {
+                    _t'It\'s alive!',
+                    _t'I brought you to life, and I shall command you!',
+                    _t'Oh, powerful spirit inhabiting this construct, aid me and protect me from my foes.'
+                }
+            },
+            explosives = {
+                names = {
+                    'bomber',
+                    'blaster',
+                    'detonator'
+                },
+                talents = {
+                    'T_THROW_BOMB',
+                    'T_ALCHEMIST_PROTECTION',
+                    'T_EXPLOSION_EXPERT'
+                },
+                descriptions = {
+                    _t'BOOOM!!',
+                    _t'Uh, which gems are explosive again?',
+                    _t'I\'m pretty sure I had eyebrows yesterday.'
+                }
+            }
+        }
+
         -- Area declarations
         self.area_declarations = {
             equilibrium = {
@@ -504,13 +577,45 @@ function _M:setup_resourceful_wanderers()
                         }
                     }
                 }
+            },
+            alchemy = {
+                cover_talent_types = {
+                    'spell/acid-alchemy',
+                    'spell/energy-alchemy',
+                    'spell/fire-alchemy',
+                    'spell/frost-alchemy'
+                },
+                talent_type_group = {
+                    'golemancy',
+                    'stone-alchemy',
+                    'explosives'
+                }
+            },
+            ['spell/advanced-golemancy'] = {
+                talent_type_group = {
+                    'golemancy',
+                    'stone-alchemy'
+                }
+            },
+            ['spell/explosives'] = {
+                talent_type = 'stone-alchemy'
             }
 
             -- cunning/called-shots (slings)
             -- stealth: cunning/ambush
         }
 
-        self.areas = self.define_areas(self.area_declarations)
+        -- Define talent types which are used in multiple areas
+        local talent_types_to_keep = { }
+        for talent_type_id, talent_type_declaration in pairs(self.talent_type_declarations) do
+            local talent_type = self:define_talent_type_full(talent_type_declaration)
+            if talent_type then
+                talent_types_to_keep[talent_type_id] = talent_type
+            end
+        end
+        self.talent_types = talent_types_to_keep
+
+        self.areas = self:define_areas(self.area_declarations)
 
         -- Thanks to rexorcorum for reminding me about this :)
         if not self.actor:knowTalent('T_SHOOT') then
@@ -519,7 +624,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Define areas from area declarations
-    function resourceful_wanderers.define_areas(area_declarations)
+    function resourceful_wanderers:define_areas(area_declarations)
         local areas = { }
         for area_name, area_declaration in pairs(area_declarations) do
             -- Skip area if it doesn't meet addon requirements
@@ -575,19 +680,19 @@ function _M:setup_resourceful_wanderers()
             -- Normalize talent properties
             if not area_declaration.talent_type_groups then
                 if area_declaration.talent_type then
-                    area.talent_types = { resourceful_wanderers.define_talent_type(area_declaration.talent_type) }
+                    area.talent_types = { resourceful_wanderers:define_talent_type(area_declaration.talent_type) }
                 elseif area_declaration.talent_types then
                     local talent_type_group_declarations = { }
                     for _, talent_type_declaration in ipairs(area_declaration.talent_types) do
                         table.insert(talent_type_group_declarations, { talent_type_declaration })
                     end
 
-                    area.talent_types = resourceful_wanderers.define_talent_types(talent_type_group_declarations)
+                    area.talent_types = resourceful_wanderers:define_talent_types(talent_type_group_declarations)
                 elseif area_declaration.talent_type_group then
-                    area.talent_types = resourceful_wanderers.define_talent_types({ area_declaration.talent_type_group })
+                    area.talent_types = resourceful_wanderers:define_talent_types({ area_declaration.talent_type_group })
                 end
             else
-                area.talent_types = resourceful_wanderers.define_talent_types(area_declaration.talent_type_groups)
+                area.talent_types = resourceful_wanderers:define_talent_types(area_declaration.talent_type_groups)
             end
 
             -- If the area has no talents, skip it
@@ -606,12 +711,12 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Define talent types of an area from a declaration of groups of talent types
-    function resourceful_wanderers.define_talent_types(talent_type_group_declarations)
+    function resourceful_wanderers:define_talent_types(talent_type_group_declarations)
         local talent_type_groups = { }
         for _, talent_type_group_declaration in ipairs(talent_type_group_declarations) do
             local talent_type_group = { }
             for _, talent_type_declaration in ipairs(talent_type_group_declaration) do
-                table.insert(talent_type_group, resourceful_wanderers.define_talent_type(talent_type_declaration))
+                table.insert(talent_type_group, resourceful_wanderers:define_talent_type(talent_type_declaration))
             end
 
             if talent_type_group ~= nil and #talent_type_group > 0 then
@@ -628,8 +733,17 @@ function _M:setup_resourceful_wanderers()
         return talent_type_groups[1]
     end
 
+    -- Define an area talent type from a talent type from either a string, or a declaration
+    function resourceful_wanderers:define_talent_type(talent_type_declaration)
+        if type(talent_type_declaration) == 'string' and self.talent_types then
+            return self.talent_types[talent_type_declaration]
+        else
+            return self:define_talent_type_full(talent_type_declaration)
+        end
+    end
+
     -- Define an area talent type from a talent type declaration
-    function resourceful_wanderers.define_talent_type(talent_type_declaration)
+    function resourceful_wanderers:define_talent_type_full(talent_type_declaration)
         -- Skip talent type if it doesn't meet addon requirements
         local addons
         if talent_type_declaration.addon then
@@ -686,7 +800,7 @@ function _M:setup_resourceful_wanderers()
 
         local talents = { }
         for _, talent_declaration in ipairs(talent_type.talents) do
-            table.insert(talents, resourceful_wanderers.define_talent(talent_declaration))
+            table.insert(talents, resourceful_wanderers:define_talent(talent_declaration))
         end
 
         if #talents == 0 then
@@ -714,7 +828,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Define an area talent from a talent declaration
-    function resourceful_wanderers.define_talent(talent_declaration)
+    function resourceful_wanderers:define_talent(talent_declaration)
         -- Don't use talents whose addon requirements aren't met
         local addons
         if talent_declaration.addon then
@@ -933,7 +1047,7 @@ function _M:setup_resourceful_wanderers()
                 end
                 talent_type.talents = talents_to_keep
 
-                -- Remove the wanderer category completely if:
+                -- Remove the talent type completely if:
                 -- - It has no sticky talents and:
                 --     - A signature talent has been removed.
                 --     - Category has number of talents less then or equal to `own_remove_treshold`.
@@ -1040,12 +1154,17 @@ function _M:setup_resourceful_wanderers()
 
     -- Covers an area
     function resourceful_wanderers:cover_area(area)
-        if area.is_covered then
+        if area == nil or area.is_covered then
             return
         end
 
         area.is_covered = true
 
+        if #area.talent_types == 0 then
+            return
+        end
+
+        -- Learn all area's talent types
         for _, talent_type in ipairs(area.talent_types) do
             -- Signature talents have priority
             local non_signature_talents = { }
@@ -1093,6 +1212,35 @@ function _M:setup_resourceful_wanderers()
 
             self.actor.talents_types_mastery[talent_type.name] = talent_type.mastery
             self.actor:learnTalentType(talent_type.name, false)
+
+            -- Remove the talent type from other areas, possibly removing the area itself
+            local areas_to_keep = { }
+            for _, area_to_remove_from in ipairs(self.areas) do
+                local talent_types_to_keep = { }
+
+                -- Skip the area we're covering
+                if area_to_remove_from.name == area.name then
+                    goto next_area
+                end
+                
+                for _, talent_type_to_keep in ipairs(area_to_remove_from.talent_types) do
+                    if talent_type_to_keep.name ~= talent_type.name then
+                        table.insert(talent_types_to_keep, talent_type_to_keep)
+                    end
+                end
+
+                if #talent_types_to_keep == 0 then
+                    -- If it's still referenced somewhere, ensure it isn't used until it deallocates
+                    area_to_remove_from.is_covered = true
+                    goto next_area_dont_keep
+                end
+
+                ::next_area::
+                table.insert(areas_to_keep, area_to_remove_from)
+
+                ::next_area_dont_keep::
+            end
+            self.areas = areas_to_keep
 
             local talent_type_name = tstring {
                 {'font', 'bold'},
