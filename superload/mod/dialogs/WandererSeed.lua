@@ -30,7 +30,7 @@ function _M:setup_resourceful_wanderers()
                             'hermit',
                             'eremite'
                         },
-                        generic = true,
+                        is_generic = true,
                         talents = {
                             'T_MEDITATION',
                             'T_ANCESTRAL_LIFE',
@@ -181,7 +181,7 @@ function _M:setup_resourceful_wanderers()
                         'technician',
                         'journeyman'
                     },
-                    generic = true,
+                    is_generic = true,
                     talents = {
                         'T_THERAPEUTICS',
                         'T_CHEMISTRY',
@@ -243,7 +243,7 @@ function _M:setup_resourceful_wanderers()
                             for _ = 1, item.amount do
                                 local object = resolvers.resolveObject(resourceful_wanderers.actor, item.data)
                                 if item.transmogrify ~= nil then
-                                    object.__transmo = item.transmogrify == false and nil or true
+                                    object.__transmo = item.transmogrify
                                 else
                                     object.__transmo = true
                                 end
@@ -300,7 +300,7 @@ function _M:setup_resourceful_wanderers()
                             'T_ECHOES_FROM_THE_PAST'
                         },
                         {
-                            generic = true,
+                            is_generic = true,
                             'T_PRECOGNITION',
                             'T_CONTINGENCY',
                             'T_SEE_THE_THREADS',
@@ -422,11 +422,7 @@ function _M:setup_resourceful_wanderers()
             },
             ['psionic/kinetic-mastery'] = {
                 talent_type = {
-                    names = {
-                        'mystic',
-                        'guru',
-                        'ascetic'
-                    },
+                    name = 'kineticist',
                     talents = {
                         'T_KINETIC_SHIELD',
                         'T_KINETIC_LEECH',
@@ -437,9 +433,9 @@ function _M:setup_resourceful_wanderers()
                     max_talents = 4,
                     own_remove_treshold = 2,
                     descriptions = {
-                        _t'Take the path of becoming one with all.',
-                        _t'Take the path of becoming all with one.',
-                        _t'Take the path of becoming.',
+                        _t'Heey, what, did I move that cup?!',
+                        _t'Heh, funny. The rock just bounced off of me.',
+                        _t'I think my body is going to atrophy if continue doing this.'
                     }
                 }
             },
@@ -466,7 +462,6 @@ function _M:setup_resourceful_wanderers()
                     }
                 }
             },
-            -- TODO: Add feedback
             ['psionic/discharge'] = {
                 talent_type_group = {
                     {
@@ -475,7 +470,6 @@ function _M:setup_resourceful_wanderers()
                             'psycho',
                             'maniac'
                         },
-                        area = 'psionic/discharge',
                         talents = {
                             'T_MIND_SEAR',
                             'T_PSYCHIC_LOBOTOMY',
@@ -483,8 +477,30 @@ function _M:setup_resourceful_wanderers()
                         },
                         descriptions = {
                             _t'Get them out of my head, GET THEM OUT!!',
-                            _t'Pity the confessor unfortunate enough to face you.',
+                            _t'Pity the confessor unfortunate enough to have to hear you.',
                             _t'In an insane world, it\'s only natural to go crazy.'
+                        }
+                    },
+                    {
+                        names = {
+                            'mystic',
+                            'guru',
+                            'yogi'
+                        },
+                        talents = {
+                            {
+                                id = 'T_BIOFEEDBACK',
+                                is_signature = true
+                            },
+                            'T_RESONANCE_FIELD',
+                            'T_AMPLIFICATION',
+                            'T_CONVERSION'
+                        },
+                        max_talents = 3,
+                        descriptions = {
+                            _t'Take the path of becoming one with all.',
+                            _t'Take the path of becoming all with one.',
+                            _t'Take the path of becoming.'
                         }
                     }
                 }
@@ -644,7 +660,7 @@ function _M:setup_resourceful_wanderers()
         talent_type.name = 'wanderer/' .. talent_type.name
 
         talent_type.mastery = talent_type_declaration.mastery or -0.2
-        talent_type.generic = talent_type_declaration.generic ~= nil and true or false
+        talent_type.is_generic = talent_type_declaration.is_generic ~= nil and true or false
 
         if talent_type_declaration.talent_groups then
             local talent_groups = talent_type_declaration.talent_groups
@@ -652,9 +668,9 @@ function _M:setup_resourceful_wanderers()
             table.shuffle(talent_groups)
             talent_type.talents = talent_groups[1]
 
-            if talent_type.talents.generic then
-                talent_type.generic = talent_type.talents.generic
-                talent_type.talents.generic = nil
+            if talent_type.talents.is_generic then
+                talent_type.is_generic = talent_type.talents.is_generic
+                talent_type.talents.is_generic = nil
             end
         else
             talent_type.talents = talent_type_declaration.talents
@@ -690,7 +706,7 @@ function _M:setup_resourceful_wanderers()
             allow_random = false,
             type = talent_type.name,
             name = _t(talent_type.name:gsub('.*/', ''), 'talent type'),
-            generic = talent_type.generic,
+            generic = talent_type.is_generic,
             description = talent_type.description
         }
 
@@ -883,7 +899,6 @@ function _M:setup_resourceful_wanderers()
                                 for _, talent_type in ipairs(talent_type_to_unmanage_area.talent_types) do
                                     for _, talent_to_sticky in ipairs(talent_type.talents) do
                                         if talent.id == talent_to_sticky.id then
-                                            game.log('STICKY: Added ' .. talent.id .. ' to ' .. talent_type.name)
                                             talent_to_sticky.is_sticky = true
                                             goto break_from_sticky
                                         end
@@ -1032,15 +1047,6 @@ function _M:setup_resourceful_wanderers()
         area.is_covered = true
 
         for _, talent_type in ipairs(area.talent_types) do
-            game.log(area.name .. ': ' .. talent_type.name)
-            for _, t in ipairs(talent_type.talents) do
-                game.log('    ' .. t.id)
-            end
-            game.log('    -----')
-            for _, t in ipairs(self.actor.talents_types_def[talent_type.name].talents) do
-                game.log('    ' .. t.id)
-            end
-
             -- Signature talents have priority
             local non_signature_talents = { }
             local talents_to_keep = { }
@@ -1082,11 +1088,7 @@ function _M:setup_resourceful_wanderers()
             end)
 
             for _, talent in ipairs(talent_type.talents) do
-                game.log(talent_type.name .. ': ' .. talent.id)
                 table.insert(self.actor.talents_types_def[talent_type.name].talents, self.actor.talents_def[talent.id])
-                for _, t in ipairs(self.actor.talents_types_def[talent_type.name].talents) do
-                    game.log('    ' .. t.id)
-                end
             end
 
             self.actor.talents_types_mastery[talent_type.name] = talent_type.mastery
