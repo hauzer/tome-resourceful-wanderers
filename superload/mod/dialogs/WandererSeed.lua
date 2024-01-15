@@ -49,18 +49,13 @@ function _M:setup_resourceful_wanderers()
                 },
                 is_generic = true,
                 talents = {
+                    'T_EXTRACT_GEMS',
+                    'T_IMBUE_ITEM',
                     {
-                        id = 'T_EXTRACT_GEMS',
-                        is_signature = true
-                    },
-                    {
-                        id = 'T_IMBUE_ITEM',
-                        is_signature = true
-                    },
-                    'T_GEM_PORTAL',
-                    'T_STONE_TOUCH'
+                        'T_GEM_PORTAL',
+                        'T_STONE_TOUCH'
+                    }
                 },
-                max_talents = 3,
                 descriptions = {
                     _t'Shiny!',
                     _t'Let\'s see what we got in this haul.',
@@ -74,18 +69,13 @@ function _M:setup_resourceful_wanderers()
                     'idolatrol'
                 },
                 talents = {
+                    'T_GOLEM_POWER',
+                    'T_GOLEM_RESILIENCE',
                     {
-                        id = 'T_GOLEM_POWER',
-                        is_signature = true
-                    },
-                    {
-                        id = 'T_GOLEM_RESILIENCE',
-                        is_signature = true
-                    },
-                    'T_INVOKE_GOLEM',
-                    'T_GOLEM_PORTAL'
+                        'T_INVOKE_GOLEM',
+                        'T_GOLEM_PORTAL'
+                    }
                 },
-                max_talents = 3,
                 descriptions = {
                     _t'It\'s alive!',
                     _t'I brought you to life, and I shall command you!',
@@ -217,16 +207,20 @@ function _M:setup_resourceful_wanderers()
                                 id = 'T_CALL_OF_THE_CRYPT',
                                 is_sticky = true
                             },
-                            'T_SHATTERED_REMAINS',
-                            'T_ASSEMBLE',
-                            'T_LORD_OF_SKULLS',
+                            {
+                                'T_SHATTERED_REMAINS',
+                                'T_ASSEMBLE',
+                                'T_LORD_OF_SKULLS'
+                            },
                             {
                                 id = 'T_CALL_OF_THE_MAUSOLEUM',
                                 is_sticky = true
                             },
-                            'T_CORPSE_EXPLOSION',
-                            'T_PUTRESCENT_LIQUEFACTION',
-                            'T_DISCARDED_REFUSE'
+                            {
+                                'T_CORPSE_EXPLOSION',
+                                'T_PUTRESCENT_LIQUEFACTION',
+                                'T_DISCARDED_REFUSE'
+                            }
                         },
                         max_talents = 4,
                         descriptions = {
@@ -297,7 +291,7 @@ function _M:setup_resourceful_wanderers()
                     }
                 }
             },
-            steam = {
+            ['steamtech-crafting'] = {
                 addon = 'orcs',
                 cover_category = 'steamtech',
                 cover_talent_types = {
@@ -318,12 +312,18 @@ function _M:setup_resourceful_wanderers()
                     },
                     is_generic = true,
                     talents = {
-                        'T_THERAPEUTICS',
-                        'T_CHEMISTRY',
-                        'T_EXPLOSIVES',
-                        'T_SMITH',
-                        'T_MECHANICAL',
-                        'T_ELECTRICITY'
+                        {
+                            take = 2,
+                            'T_THERAPEUTICS',
+                            'T_CHEMISTRY',
+                            'T_EXPLOSIVES'
+                        },
+                        {
+                            take = 2,
+                            'T_SMITH',
+                            'T_MECHANICAL',
+                            'T_ELECTRICITY'
+                        }
                     },
                     max_talents = 4,
                     descriptions = {
@@ -373,7 +373,7 @@ function _M:setup_resourceful_wanderers()
                                 }
                             }
                         }
-    
+
                         for _, item in ipairs(items) do
                             for _ = 1, item.amount do
                                 local object = resolvers.resolveObject(resourceful_wanderers.actor, item.data)
@@ -382,7 +382,7 @@ function _M:setup_resourceful_wanderers()
                                 else
                                     object.__transmo = true
                                 end
-                                
+
                                 object:identify(true)
                             end
                         end
@@ -655,18 +655,13 @@ function _M:setup_resourceful_wanderers()
                         'neophyte'
                     },
                     talents = {
+                        'T_MANATHRUST',
+                        'T_DISRUPTION_SHIELD',
                         {
-                            id = 'T_MANATHRUST',
-                            is_signature = true
-                        },
-                        {
-                            id = 'T_DISRUPTION_SHIELD',
-                            is_signature = true
-                        },
-                        'T_ARCANE_POWER',
-                        'T_ARCANE_VORTEX'
+                            'T_ARCANE_POWER',
+                            'T_ARCANE_VORTEX'
+                        }
                     },
-                    max_talents = 3,
                     descriptions = {
                         _t'When is this book going to get GOOD?!',
                         _t'That\'s not the right incantation!',
@@ -678,15 +673,14 @@ function _M:setup_resourceful_wanderers()
                 talent_type = {
                     name_pool = 'electricity',
                     talents = {
+                        'T_LIGHTNING',
                         {
-                            id = 'T_LIGHTNING',
-                            is_signature = true
-                        },
-                        'T_CHAIN_LIGHTNING',
-                        'T_FEATHER_WIND',
-                        'T_THUNDERSTORM'
+                            take = 2,
+                            'T_CHAIN_LIGHTNING',
+                            'T_FEATHER_WIND',
+                            'T_THUNDERSTORM'
+                        }
                     },
-                    max_talents = 3,
                     description_pool = 'electricity'
                 }
             },
@@ -694,18 +688,34 @@ function _M:setup_resourceful_wanderers()
                 talent_type = {
                     name_pool = 'fire',
                     talents = {
+                        'T_FLAME',
                         {
-                            id = 'T_FLAME',
-                            is_signature = true
-                        },
-                        'T_FLAMESHOCK',
-                        'T_FIREFLASH',
-                        'T_INFERNO'
+                            take = 2,
+                            'T_FLAMESHOCK',
+                            'T_FIREFLASH',
+                            'T_INFERNO'
+                        }
                     },
-                    max_talents = 3,
                     description_pool = 'fire'
                 }
-            }
+            },
+            -- ['steamtech/magnetism'] = {
+            --     addon = 'orcs',
+            --     talent_type = {
+            --         name_pool = 'fire',
+            --         talents = {
+            --             {
+            --                 id = 'T_FLAME',
+            --                 is_signature = true
+            --             },
+            --             'T_FLAMESHOCK',
+            --             'T_FIREFLASH',
+            --             'T_INFERNO'
+            --         },
+            --         max_talents = 3,
+            --         description_pool = 'fire'
+            --     }
+            -- }
 
             -- TODO
             -- cunning/called-shots (slings)
@@ -928,7 +938,9 @@ function _M:setup_resourceful_wanderers()
 
         local talents = { }
         for _, talent_declaration in ipairs(talent_type.talents) do
-            table.insert(talents, resourceful_wanderers:define_talent(talent_declaration))
+            for _, talent in ipairs(resourceful_wanderers:define_talents(talent_declaration)) do
+                table.insert(talents, talent)
+            end
         end
 
         if #talents == 0 then
@@ -955,8 +967,27 @@ function _M:setup_resourceful_wanderers()
         return talent_type
     end
 
-    -- Define an area talent from a talent declaration
-    function resourceful_wanderers:define_talent(talent_declaration)
+    -- Define area talents from a talent declaration
+    function resourceful_wanderers:define_talents(talent_declaration)
+        if type(talent_declaration) ~= 'string' then
+            -- Check if the talent declaration is a group of talents
+            for k, _ in pairs(talent_declaration) do
+                if type(k) == 'number' then
+                    ---@diagnostic disable-next-line: undefined-field
+                    table.shuffle(talent_declaration)
+
+                    local talents = { }
+                    for i = 1, talent_declaration.take or 1 do
+                        for _, talent in ipairs(self:define_talents(talent_declaration[i])) do
+                            table.insert(talents, talent)
+                        end
+                    end
+
+                    return talents
+                end
+            end
+        end
+
         -- Don't use talents whose addon requirements aren't met
         local addons
         if talent_declaration.addon then
@@ -967,16 +998,16 @@ function _M:setup_resourceful_wanderers()
 
         for _, addon in ipairs(addons) do
             if not Game:isAddonActive(addon) then
-                return nil
+                return { }
             end
         end
 
-        return {
+        return {{
             id = talent_declaration.id or talent_declaration,
             addons = addons,
             is_signature = talent_declaration.is_signature or false,
             is_sticky = talent_declaration.is_sticky or false
-        }
+        }}
     end
 
     -- Get the area which defines the talent type
@@ -1192,7 +1223,7 @@ function _M:setup_resourceful_wanderers()
                 --     - A signature talent has been removed.
                 --     - Category has number of talents less then or equal to `own_remove_treshold`.
                 --     - Category has lost a number of talents more than or equal to `disown_remove_treshold`.
-                -- remove it and refund the category and talent points if any were spent
+                -- Refund the category and talent points if any were spent.
                 if
                     (
                         #talent_type.talents <= talent_type.own_remove_treshold or
@@ -1362,7 +1393,7 @@ function _M:setup_resourceful_wanderers()
                 if area_to_remove_from.name == area.name then
                     goto next_area
                 end
-                
+
                 for _, talent_type_to_keep in ipairs(area_to_remove_from.talent_types) do
                     if talent_type_to_keep.name ~= talent_type.name then
                         table.insert(talent_types_to_keep, talent_type_to_keep)
