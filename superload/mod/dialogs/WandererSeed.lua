@@ -17,6 +17,14 @@ function _M:setup_resourceful_wanderers()
                 'T_AUTOLOADER',
                 'T_STEAMGUN_MASTERY',
                 'T_PSYSHOT'
+            },
+            {
+                'T_AGILE_DEFENSE',
+                'T_SKIRMISHER_BUCKLER_EXPERTISE'
+            },
+            {
+                'T_MASTER_MARKSMAN',
+                'T_SKIRMISHER_SLING_SUPREMACY'
             }
         }
 
@@ -142,7 +150,7 @@ function _M:setup_resourceful_wanderers()
                     'wild-gift/fungus',
                     'wild-gift/harmony'
                 },
-                talent_types_group = {
+                talent_type_group = {
                     {
                         names = {
                             'recluse',
@@ -992,10 +1000,90 @@ function _M:setup_resourceful_wanderers()
                         _t'I need to train!'
                     }
                 }
+            },
+            slings = {
+                cover_talent_types = {
+                    'cunning/called-shots',
+                    'technique/agility',
+                    'technique/buckler-training',
+                    'technique/reflexes',
+                    'technique/archery-training',
+                    'technique/archery-prowess'
+                },
+                talent_type = {
+                    names = {
+                        'slinger',
+                        'pebbler',
+                        'catapulter'
+                    },
+                    talents = {
+                        {
+                            id = 'T_SKIRMISHER_SLING_SUPREMACY',
+                            is_signature = true
+                        },
+                        'T_SKIRMISHER_SWIFT_SHOT',
+                        'T_SKIRMISHER_HURRICANE_SHOT',
+                        'T_SKIRMISHER_BOMBARDMENT',
+                        'T_FLARE',
+                        'T_TRUESHOT',
+                        'T_STEADY_SHOT',
+                        'T_PIN_DOWN',
+                        'T_FRAGMENTATION_SHOT',
+                        'T_SCATTER_SHOT',
+                        'T_SHOOT_DOWN',
+                        'T_INTUITIVE_SHOTS',
+                        'T_SENTINEL',
+                        'T_BULL_SHOT',
+                        'T_RAPID_SHOT',
+                        'T_SKIRMISHER_KNEECAPPER',
+                        'T_SKIRMISHER_THROAT_SMASHER',
+                        'T_SKIRMISHER_NOGGIN_KNOCKER'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'One, two, three! That\'s how you do it.',
+                        _t'I didn\'t see his left hook coming...',
+                        _t'I need to train!'
+                    }
+                }
+            },
+            bows = {
+                cover_talent_types = {
+                    'technique/sniper',
+                    'technique/reflexes',
+                    'technique/archery-training',
+                    'technique/archery-prowess'
+                },
+                talent_type = {
+                    names = {
+                        'marksman',
+                        'hunter',
+                        'ranger'
+                    },
+                    talents = {
+                        {
+                            id = 'T_MASTER_MARKSMAN',
+                            is_signature = true
+                        },
+                        'T_FIRST_BLOOD',
+                        'T_FLARE',
+                        'T_TRUESHOT',
+                        'T_STEADY_SHOT',
+                        'T_PIN_DOWN',
+                        'T_FRAGMENTATION_SHOT',
+                        'T_SCATTER_SHOT',
+                        'T_SHOOT_DOWN',
+                        'T_INTUITIVE_SHOTS',
+                        'T_SENTINEL'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'One, two, three! That\'s how you do it.',
+                        _t'I didn\'t see his left hook coming...',
+                        _t'I need to train!'
+                    }
+                }
             }
-
-            -- TODO
-            -- cunning/called-shots (slings)
         }
 
         for _, name_pool in pairs(self.talent_type_name_pools) do
@@ -1019,6 +1107,8 @@ function _M:setup_resourceful_wanderers()
         self.talent_types = talent_types_to_keep
 
         self.areas = self:define_areas(self.area_declarations)
+        ---@diagnostic disable-next-line: undefined-field
+        table.shuffle(self.areas)
 
         -- Thanks to rexorcorum for reminding me about this :)
         if not self.actor:knowTalent('T_SHOOT') then

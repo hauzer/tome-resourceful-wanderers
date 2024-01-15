@@ -44,14 +44,13 @@ function _M:canLearnTalent(t, offset, ignore_special)
     return resourceful_wanderers:with_managed_talent(t, function(talent_type, ...)
         local can_learn = base_canLearnTalent(self, t, offset, ignore_special)
 
-        local did_hit_talent_limit = false
-        local knows_competing_mastery_talents = false
-        if not self:knowTalent(t.id) then
-            did_hit_talent_limit =
+        if can_learn and not self:knowTalent(t.id) then
+            local did_hit_talent_limit =
                 talent_type ~= nil and
                 talent_type.talent_learn_limit ~= nil and
-                (resourceful_wanderers:get_talent_type_number_of_known_talents(talent_type.name) < talent_type.talent_learn_limit)
+                (resourceful_wanderers:get_talent_type_number_of_known_talents(talent_type.name) >= talent_type.talent_learn_limit)
 
+            local knows_competing_mastery_talents = false
             local competing_mastery_talents = resourceful_wanderers:get_competing_mastery_talents(t.id)
             if #competing_mastery_talents > 0 then
                 for _, competing_talent_id in ipairs(competing_mastery_talents) do
@@ -61,9 +60,11 @@ function _M:canLearnTalent(t, offset, ignore_special)
                     end
                 end
             end
+
+            return can_learn and not knows_competing_mastery_talents and not did_hit_talent_limit
         end
 
-        return can_learn and not knows_competing_mastery_talents and not did_hit_talent_limit
+        return can_learn
     end)
 end
 
@@ -79,8 +80,8 @@ function _M:getTalentReqDesc(t_id, levmod)
 
         if not self:knowTalent(t_id) then
             if talent_type ~= nil and talent_type.talent_learn_limit ~= nil then
-                local did_hit_talent_limit = resourceful_wanderers:get_talent_type_number_of_known_talents(talent_type.name) < talent_type.talent_learn_limit
-                str:add((did_hit_talent_limit and {'color', 0x00,0xff,0x00} or {'color', 0xff,0x00,0x00}), _t'- Less than ' .. talent_type.talent_learn_limit .. _t' talents known in this category', true)
+                local did_hit_talent_limit = resourceful_wanderers:get_talent_type_number_of_known_talents(talent_type.name) >= talent_type.talent_learn_limit
+                str:add((not did_hit_talent_limit and {'color', 0x00,0xff,0x00} or {'color', 0xff,0x00,0x00}), _t'- Less than ' .. talent_type.talent_learn_limit .. _t' talents known in this category', true)
             end
 
             local competing_mastery_talents = resourceful_wanderers:get_competing_mastery_talents(t_id)
