@@ -20,7 +20,8 @@ function _M:setup_resourceful_wanderers()
             },
             {
                 'T_AGILE_DEFENSE',
-                'T_SKIRMISHER_BUCKLER_EXPERTISE'
+                'T_SKIRMISHER_BUCKLER_EXPERTISE',
+                'T_STONESHIELD'
             },
             {
                 'T_MASTER_MARKSMAN',
@@ -1041,9 +1042,9 @@ function _M:setup_resourceful_wanderers()
                     },
                     max_talents = 4,
                     descriptions = {
-                        _t'One, two, three! That\'s how you do it.',
-                        _t'I didn\'t see his left hook coming...',
-                        _t'I need to train!'
+                        _t'Bombard them from afar.',
+                        _t'Even one good sling is enough to fell down a giant.',
+                        _t'I can break skulls with these stones.'
                     }
                 }
             },
@@ -1078,9 +1079,9 @@ function _M:setup_resourceful_wanderers()
                     },
                     max_talents = 4,
                     descriptions = {
-                        _t'One, two, three! That\'s how you do it.',
-                        _t'I didn\'t see his left hook coming...',
-                        _t'I need to train!'
+                        _t'I will pierce your heart.',
+                        _t'Steady, steady... Fire!',
+                        _t'Mind the wind, adjust the trajectory...'
                     }
                 }
             }
