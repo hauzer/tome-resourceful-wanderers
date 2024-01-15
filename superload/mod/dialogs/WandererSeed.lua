@@ -1385,7 +1385,7 @@ function _M:setup_resourceful_wanderers()
 
         talent_type.max_talents = talent_type_declaration.max_talents or #talent_type.talents
         talent_type.own_remove_treshold = talent_type_declaration.own_remove_treshold or 0
-        talent_type.disown_remove_treshold = talent_type_declaration.disown_remove_treshold or 100
+        talent_type.disown_remove_treshold = talent_type_declaration.disown_remove_treshold
 
         -- Create ToME talent type definition
         ActorTalents:newTalentType {
@@ -1653,7 +1653,13 @@ function _M:setup_resourceful_wanderers()
                             was_signature_talent_removed = true
                         end
 
-                        talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
+                        if talent_type.disown_remove_treshold ~= nil then
+                            talent_type.disown_remove_treshold = talent_type.disown_remove_treshold - 1
+                        end
+
+                        if talent_type.talent_learn_limit ~= nil then
+                            talent_type.talent_learn_limit = talent_type.talent_learn_limit - 1
+                        end
 
                         goto next_talent
 
@@ -1674,9 +1680,7 @@ function _M:setup_resourceful_wanderers()
                     self.actor.talents_types_def[talent_type.name].talents = tome_talents_to_keep
                 end
 
-                if talent_type.talent_learn_limit then
-                    talent_type.talent_learn_limit = talent_type.talent_learn_limit - (#talent_type.talents - #talents_to_keep)
-                end
+
 
                 talent_type.talents = talents_to_keep
 
@@ -1689,7 +1693,7 @@ function _M:setup_resourceful_wanderers()
                 if
                     (
                         #talent_type.talents <= talent_type.own_remove_treshold or
-                        talent_type.disown_remove_treshold <= 0 or
+                        (talent_type.disown_remove_treshold ~= nil and talent_type.disown_remove_treshold <= 0) or
                         (talent_type.talent_learn_limit ~= nil and talent_type.talent_learn_limit <= 0) or
                         was_signature_talent_removed
                     ) and
@@ -1765,6 +1769,8 @@ function _M:setup_resourceful_wanderers()
                 end
 
                 if self.actor:knowTalentType(talent_type.name) ~= nil then
+                    self:update_talent_type_description(talent_type)
+
                     for _, message in ipairs(individual_talent_log_messages) do
                         game.log(message)
                     end
@@ -1847,6 +1853,8 @@ function _M:setup_resourceful_wanderers()
             self.actor.talents_types_mastery[talent_type.name] = talent_type.mastery
             self.actor:learnTalentType(talent_type.name, false)
 
+            self:update_talent_type_description(talent_type)
+
             -- Remove the talent type from other areas, possibly removing the area itself
             local areas_to_keep = { }
             for _, area_to_remove_from in ipairs(self.areas) do
@@ -1894,6 +1902,49 @@ function _M:setup_resourceful_wanderers()
         end
 
         area:on_cover()
+    end
+
+    function resourceful_wanderers:update_talent_type_description(talent_type)
+        local sticky_talent_names = { }
+        local signature_talent_names = { }
+        for _, talent in ipairs(talent_type.talents) do
+            if talent.is_sticky then
+                table.insert(sticky_talent_names, self.actor.talents_def[talent.id].name)
+            elseif talent.is_signature then
+                table.insert(signature_talent_names, self.actor.talents_def[talent.id].name)
+            end
+        end
+
+        local tome_talent_type = self.actor.talents_types_def[talent_type.name]
+        local description_addition
+        if #sticky_talent_names > 0 then
+            description_addition =
+                '#{italic}#This category will never be removed unless the original categories of the following talents are learned: ' ..
+                '\n - ' .. table.concat(sticky_talent_names, '\n - ') .. '\n'
+        elseif #signature_talent_names > 0 then
+            description_addition =
+                '#{italic}#This category will be removed if the original categories of any of the following talents are learned: ' ..
+                '\n - ' .. table.concat(signature_talent_names, '\n - ') .. '\n'
+        else
+            local talents_until_remove
+            if talent_type.own_remove_treshold ~= 0 then
+                talents_until_remove = #talent_type.talents - talent_type.own_remove_treshold
+            elseif talent_type.talent_learn_limit ~= nil then
+                talents_until_remove = talent_type.talent_learn_limit
+            elseif talent_type.disown_remove_treshold ~= nil then
+                talents_until_remove = talent_type.disown_remove_treshold
+            end
+
+            if talents_until_remove ~= nil then
+                description_addition = '#{italic}#This category will be removed if you learn the original categories of ' .. talents_until_remove .. ' more talents.'
+            else
+                description_addition = '#{italic}#This category will be removed once you learn the original categories of all of its talents.'
+            end
+        end
+
+        tome_talent_type.description =
+            talent_type.description .. '\n\n\n\n' .. description_addition ..
+            '\nIf this category is removed, any invested category and talent points will be refunded.'
     end
 
     -- Called before the player learns a talent type
