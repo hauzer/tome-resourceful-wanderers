@@ -12,6 +12,14 @@ function _M:setup_resourceful_wanderers()
         self.is_active = true
         self.actor = actor
 
+        self.weapon_mastery_talent_groups = {
+            {
+                'T_AUTOLOADER',
+                'T_STEAMGUN_MASTERY',
+                'T_PSYSHOT'
+            }
+        }
+
         self.talent_type_name_pools = {
             fire = {
                 'pyromaniac',
@@ -131,11 +139,10 @@ function _M:setup_resourceful_wanderers()
             equilibrium = {
                 cover_category = 'wild-gift',
                 ignore_talent_types = {
-                    'wild-gift/call',
                     'wild-gift/fungus',
                     'wild-gift/harmony'
                 },
-                talent_types = {
+                talent_types_group = {
                     {
                         names = {
                             'recluse',
@@ -699,23 +706,63 @@ function _M:setup_resourceful_wanderers()
                     description_pool = 'fire'
                 }
             },
-            -- ['steamtech/magnetism'] = {
-            --     addon = 'orcs',
-            --     talent_type = {
-            --         name_pool = 'fire',
-            --         talents = {
-            --             {
-            --                 id = 'T_FLAME',
-            --                 is_signature = true
-            --             },
-            --             'T_FLAMESHOCK',
-            --             'T_FIREFLASH',
-            --             'T_INFERNO'
-            --         },
-            --         max_talents = 3,
-            --         description_pool = 'fire'
-            --     }
-            -- }
+            ['steamtech/magnetism'] = {
+                addon = 'orcs',
+                talent_type = {
+                    names = {
+                        'contraptor',
+                        'mechanic',
+                        'gadgeteer'
+                    },
+                    talents = {
+                        'T_DEPLOY_TURRET',
+                        {
+                            'T_OVERCLOCK',
+                            'T_UPGRADE',
+                            'T_HUNKER_DOWN'
+                        },
+                        'T_MECHARACHNID',
+                        {
+                            'T_STORMCOIL_GENERATOR',
+                            'T_MECHARACHNID_CHASSIS',
+                            'T_MECHARACHNID_PILOTING'
+                        }
+                    },
+                    descriptions = {
+                        _t'What does this button do?',
+                        _t'... it isn\'t supposed to do that!',
+                        _t'Heh, I can take back control of it, just give me a minute...'
+                    }
+                }
+            },
+            ['steamtech/heavy-weapons'] = {
+                addon = 'orcs',
+                talent_type = {
+                    names = {
+                        'modder',
+                        'gunsmith',
+                        'overclocker'
+                    },
+                    talents = {
+                        {
+                            id = 'T_AUTOLOADER',
+                            is_signature = true
+                        },
+                        'T_DOUBLE_SHOTS',
+                        'T_UNCANNY_RELOAD',
+                        'T_STATIC_SHOT',
+                        'T_BOILING_SHOT',
+                        'T_BLUNT_SHOT',
+                        'T_VACUUM_SHOT'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'There\'s always a way to juice out some more power.',
+                        _t'Gotta pick the right tool for the job. And the job is killing stuff.',
+                        _t'I wonder if I can make these two parts compatible...'
+                    }
+                }
+            }
 
             -- TODO
             -- cunning/called-shots (slings)
@@ -1010,6 +1057,30 @@ function _M:setup_resourceful_wanderers()
         }}
     end
 
+    -- Gets all competing mastery talents for the given talent
+    function resourceful_wanderers:get_competing_mastery_talents(talent_id)
+        local competing_talents = { }
+        for _, group in ipairs(resourceful_wanderers.weapon_mastery_talent_groups) do
+            local is_competing_group = false
+            local other_talents = { }
+            for _, group_talent in ipairs(group) do
+                if group_talent == talent_id then
+                    is_competing_group = true
+                else
+                    table.insert(other_talents, group_talent)
+                end
+            end
+
+            if is_competing_group then
+                for _, other_talent in ipairs(other_talents) do
+                    table.insert(competing_talents, other_talent)
+                end
+            end
+        end
+
+        return competing_talents
+    end
+
     -- Get the area which defines the talent type
     function resourceful_wanderers:get_talent_type_area(talent_type_id)
         for _, area in ipairs(self.areas) do
@@ -1174,7 +1245,7 @@ function _M:setup_resourceful_wanderers()
                         table.insert(individual_talent_log_messages,
                             log_message ..
                             ' The talent has been removed from #LIGHT_BLUE#' .. tostring(talent_type_name) ..
-                            '#GOLD# since you learned its original category, #LIGHT_BLUE#' .. tostring(talent_type_to_unmanage_name)
+                            '#GOLD# since you learned its original category, #LIGHT_BLUE#' .. tostring(talent_type_to_unmanage_name) .. '#GOLD#.'
                         )
 
                         -- If the talent type we're unmanaging is from an area, and the talent we're unmanaging is
