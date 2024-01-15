@@ -26,6 +26,12 @@ function _M:setup_resourceful_wanderers()
             {
                 'T_MASTER_MARKSMAN',
                 'T_SKIRMISHER_SLING_SUPREMACY'
+            },
+            {
+                'T_STRENGTH_OF_PURPOSE',
+                'T_MASTER_MARKSMAN',
+                'T_WEAPONS_MASTERY',
+                'T_KNIFE_MASTERY'
             }
         }
 
