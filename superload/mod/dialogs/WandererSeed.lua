@@ -735,7 +735,12 @@ function _M:setup_resourceful_wanderers()
                     }
                 }
             },
-            ['steamtech/heavy-weapons'] = {
+            ['modded-guns'] = {
+                cover_talent_types = {
+                    'steamtech/artillery',
+                    'steamtech/heavy-weapons',
+                    'steamtech/chemical-warfare'
+                },
                 addon = 'orcs',
                 talent_type = {
                     names = {
@@ -748,18 +753,87 @@ function _M:setup_resourceful_wanderers()
                             id = 'T_AUTOLOADER',
                             is_signature = true
                         },
+                        'T_OVERHEAT_BULLETS',
+                        'T_SUPERCHARGE_BULLETS',
+                        'T_PERCUSSIVE_BULLETS',
+                        'T_COMBUSTIVE_BULLETS',
                         'T_DOUBLE_SHOTS',
                         'T_UNCANNY_RELOAD',
-                        'T_STATIC_SHOT',
-                        'T_BOILING_SHOT',
-                        'T_BLUNT_SHOT',
-                        'T_VACUUM_SHOT'
+                        'T_STATIC_SHOT'
                     },
                     max_talents = 4,
                     descriptions = {
                         _t'There\'s always a way to juice out some more power.',
                         _t'Gotta pick the right tool for the job. And the job is killing stuff.',
                         _t'I wonder if I can make these two parts compatible...'
+                    }
+                }
+            },
+            guns = {
+                cover_talent_types = {
+                    'steamtech/bullets-mastery',
+                    'steamtech/elusiveness',
+                    'steamtech/gunslinging'
+                },
+                addon = 'orcs',
+                talent_type = {
+                    names = {
+                        'pistolero',
+                        'gunfighter',
+                        'gunner'
+                    },
+                    talents = {
+                        {
+                            id = 'T_STEAMGUN_MASTERY',
+                            is_signature = true
+                        },
+                        'T_STRAFE',
+                        'T_STARTLING_SHOT',
+                        'T_EVASIVE_SHOTS',
+                        'T_TRICK_SHOT',
+                        'T_DOUBLE_SHOTS',
+                        'T_UNCANNY_RELOAD',
+                        'T_STATIC_SHOT'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'Nothing better in life than the smell of gunpowder.',
+                        _t'Fastest hand in the West... and East.',
+                        _t'It\'s high noon.'
+                    }
+                }
+            },
+            ['psychic-guns'] = {
+                cover_talent_types = {
+                    'steamtech/dread',
+                    'steamtech/mechstar'
+                },
+                addon = 'orcs',
+                talent_type = {
+                    names = {
+                        'terrorist',
+                        'hitman',
+                        'gunman'
+                    },
+                    talents = {
+                        {
+                            id = 'T_PSYSHOT',
+                            is_signature = true
+                        },
+                        'T_BOILING_SHOT',
+                        'T_BLUNT_SHOT',
+                        'T_VACUUM_SHOT',
+                        'T_DOUBLE_SHOTS',
+                        'T_UNCANNY_RELOAD',
+                        'T_STATIC_SHOT',
+                        'T_LUCID_SHOT',
+                        'T_PSY_WORM'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'Meditate on the shot before pulling the trigger.',
+                        _t'It\'s not about accuracy, it\'s about terror.',
+                        _t'Break their mind before firing a single shot. Then they\'re easy marks.'
                     }
                 }
             }
@@ -1249,12 +1323,13 @@ function _M:setup_resourceful_wanderers()
                         )
 
                         -- If the talent type we're unmanaging is from an area, and the talent we're unmanaging is
-                        -- sticky in the iterating talent type, then make it sticky in the talent type we're unmanaging
+                        -- signature in the iterating talent type, then make it sticky in the talent type
+                        -- we're unmanaging (if it's not alreaday a signature talent)
                         if talent.is_signature then
                             if talent_type_to_unmanage_area then
                                 for _, talent_type in ipairs(talent_type_to_unmanage_area.talent_types) do
                                     for _, talent_to_sticky in ipairs(talent_type.talents) do
-                                        if talent.id == talent_to_sticky.id then
+                                        if talent.id == talent_to_sticky.id and not talent_to_sticky.is_signature then
                                             talent_to_sticky.is_sticky = true
                                             goto break_from_sticky
                                         end
@@ -1277,7 +1352,7 @@ function _M:setup_resourceful_wanderers()
                     table.insert(tome_talents_to_keep, self.actor.talents_def[talent.id])
                     table.insert(talents_to_keep, talent)
 
-                    if talent.is_sticky then
+                    if talent.is_sticky and not talent.is_signature then
                         has_sticky_talents = true
                     end
 
