@@ -10,8 +10,6 @@ function _M:setup_resourceful_wanderers()
 
     function resourceful_wanderers:construct(actor)
         self.is_active = true
-
-        -- Addon is tightly tied to the player actor
         self.actor = actor
 
         self.talent_type_name_pools = {
@@ -110,6 +108,31 @@ function _M:setup_resourceful_wanderers()
                     _t'Uh, which gems are explosive again?',
                     _t'I\'m pretty sure I had eyebrows yesterday.'
                 }
+            },
+            souls = {
+                names = {
+                    'soulpoacher',
+                    'soulsnatcher',
+                    'soulsnuffer'
+                },
+                talents = {
+                    {
+                        id = 'T_SOUL_LEECH',
+                        is_signature = true
+                    },
+                    'T_IMPENDING_DOOM',
+                    {
+                        id = 'T_RAZE',
+                        addon = 'ashes-urhrok',
+                        is_signature = true
+                    }
+                },
+                own_remove_treshold = 1,
+                descriptions = {
+                    _t'The urge to feast is becoming maddening!',
+                    _t'Souls? Collect them? Why not!',
+                    _t'Ah, how they all keep me company.'
+                }
             }
         }
 
@@ -167,38 +190,50 @@ function _M:setup_resourceful_wanderers()
                 cover_talent_types = {
                     'spell/age-of-dusk',
                     'spell/death',
-                    'spell/dreadmaster',
-                    'spell/eradication',
                     'spell/glacial-waste',
-                    'spell/grave',
-                    'spell/master-necromancer',
                     'spell/master-of-bones',
                     'spell/master-of-flesh',
                     'spell/rime-wraith'
                 },
-                talent_type = {
-                    names = {
-                        'soulpoacher',
-                        'soulsnatcher',
-                        'soulsnuffer'
-                    },
-                    talents = {
-                        {
-                            id = 'T_SOUL_LEECH',
-                            is_signature = true
+                talent_type = 'souls'
+            },
+            minions = {
+                cover_talent_types = {
+                    'spell/eradication',
+                    'spell/dreadmaster',
+                    'spell/grave',
+                    'spell/master-necromancer'
+                },
+                talent_type_group = {
+                    'souls',
+                    {
+                        names = {
+                            'gravekeeper',
+                            'mortician',
+                            'undertaker'
                         },
-                        'T_IMPENDING_DOOM',
-                        {
-                            id = 'T_RAZE',
-                            addon = 'ashes-urhrok',
-                            is_signature = true
+                        talents = {
+                            {
+                                id = 'T_CALL_OF_THE_CRYPT',
+                                is_sticky = true
+                            },
+                            'T_SHATTERED_REMAINS',
+                            'T_ASSEMBLE',
+                            'T_LORD_OF_SKULLS',
+                            {
+                                id = 'T_CALL_OF_THE_MAUSOLEUM',
+                                is_sticky = true
+                            },
+                            'T_CORPSE_EXPLOSION',
+                            'T_PUTRESCENT_LIQUEFACTION',
+                            'T_DISCARDED_REFUSE'
+                        },
+                        max_talents = 4,
+                        descriptions = {
+                            _t'Twitch, twitch! They still twitch.',
+                            _t'From dust you came, to dust you shall return. And from dust you shall rise again once more.',
+                            _t'I take such good care of you, no wonder death can\'t separate us.'
                         }
-                    },
-                    own_remove_treshold = 1,
-                    descriptions = {
-                        _t'The urge to feast is becoming maddening!',
-                        _t'Souls? Collect them? Why not!',
-                        _t'Ah, how they all keep me company.'
                     }
                 }
             },
@@ -352,7 +387,7 @@ function _M:setup_resourceful_wanderers()
                             end
                         end
 
-                        log_message.data = log_message.data .. '#GOLD#. You also find some gadgets.'
+                        log_message.data = log_message.data .. ' You also find some gadgets.'
                     end
                 }
             },
@@ -413,6 +448,7 @@ function _M:setup_resourceful_wanderers()
                     },
                     max_talents = 8,
                     disown_remove_treshold = 4,
+                    talent_learn_limit = 4,
                     descriptions = {
                         _t'Didn\'t I have this deja vu already? Deja-deja vu?',
                         _t'Very strange that these clocks are all showing different incorrect times. Again.',
@@ -620,7 +656,7 @@ function _M:setup_resourceful_wanderers()
                     },
                     talents = {
                         {
-                            id = 'T_MANATHURST',
+                            id = 'T_MANATHRUST',
                             is_signature = true
                         },
                         {
@@ -672,7 +708,6 @@ function _M:setup_resourceful_wanderers()
             }
 
             -- TODO
-            -- spell/dreadmaster, spell/boneyard, spell/grave, spell/master-necromancer: minions
             -- cunning/called-shots (slings)
             -- stealth: cunning/ambush
         }
@@ -842,6 +877,7 @@ function _M:setup_resourceful_wanderers()
 
         local talent_type = {
             addons = addons,
+            talent_learn_limit = talent_type_declaration.talent_learn_limit,
             on_cover = talent_type_declaration.on_cover or function(_, _) end
         }
 
@@ -966,6 +1002,18 @@ function _M:setup_resourceful_wanderers()
         return false
     end
 
+    -- Get talent type number of known talents
+    function resourceful_wanderers:get_talent_type_number_of_known_talents(talent_type_id)
+        local number_of_known_talents = 0
+        for _, talent in ipairs(self.actor.talents_types_def[talent_type_id].talents) do
+            if self.actor:knowTalent(talent.id) then
+                number_of_known_talents = number_of_known_talents + 1
+            end
+        end
+
+        return number_of_known_talents
+    end
+
     -- Returns all areas which cover the talent type
     function resourceful_wanderers:find_covering_areas_for_talent_type(talent_type_id)
         local areas = { }
@@ -1018,9 +1066,9 @@ function _M:setup_resourceful_wanderers()
                                 talent_type.name,
                                 0
                             }
-                
-                            local retval = callback()
-                
+
+                            local retval = callback(talent_type, managed_talent, talent)
+
                             talent.type = orig_type
                             return retval
                         end
@@ -1029,7 +1077,7 @@ function _M:setup_resourceful_wanderers()
             end
         end
 
-        return callback()
+        return callback(nil, nil, talent)
     end
 
     -- Remove all talent type's talents from all areas
@@ -1258,18 +1306,18 @@ function _M:setup_resourceful_wanderers()
 
         -- Learn all area's talent types
         for _, talent_type in ipairs(area.talent_types) do
-            -- Signature talents have priority
-            local non_signature_talents = { }
+            -- Signature and sticky talents have priority
+            local non_priority_talents = { }
             local talents_to_keep = { }
             for _, talent in ipairs(talent_type.talents) do
-                if talent.is_signature then
+                if talent.is_signature or talent.is_sticky then
                     table.insert(talents_to_keep, talent)
                 else
-                    table.insert(non_signature_talents, talent)
+                    table.insert(non_priority_talents, talent)
                 end
             end
 
-            for _, talent in ipairs(non_signature_talents) do
+            for _, talent in ipairs(non_priority_talents) do
                 if #talents_to_keep >= talent_type.max_talents then
                     break
                 end
@@ -1277,15 +1325,7 @@ function _M:setup_resourceful_wanderers()
                 table.insert(talents_to_keep, talent)
             end
 
-            game.log(talent_type.name .. ' BEFORE:')
-            for _, talent in ipairs(talent_type.talents) do
-                game.log('    ' .. talent.id)
-            end
             talent_type.talents = talents_to_keep
-            game.log(talent_type.name .. ' AFTER:')
-            for _, talent in ipairs(talent_type.talents) do
-                game.log('    ' .. talent.id)
-            end
 
             -- Sort talents in the talent type according to required level
             table.sort(talent_type.talents, function(talent_a, talent_b)
@@ -1328,8 +1368,9 @@ function _M:setup_resourceful_wanderers()
                         table.insert(talent_types_to_keep, talent_type_to_keep)
                     end
                 end
+                area_to_remove_from.talent_types = talent_types_to_keep
 
-                if #talent_types_to_keep == 0 then
+                if #area_to_remove_from.talent_types == 0 then
                     -- If it's still referenced somewhere, ensure it isn't used until it deallocates
                     area_to_remove_from.is_covered = true
                     goto next_area_dont_keep
