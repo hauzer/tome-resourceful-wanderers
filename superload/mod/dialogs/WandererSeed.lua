@@ -836,6 +836,43 @@ function _M:setup_resourceful_wanderers()
                         _t'Break their mind before firing a single shot. Then they\'re easy marks.'
                     }
                 }
+            },
+            steamsaws = {
+                cover_talent_types = {
+                    'steamtech/sawmaiming',
+                    'steamtech/battlefield-management',
+                    'steamtech/automated-butchery'
+                },
+                addon = 'orcs',
+                talent_type = {
+                    names = {
+                        'butcher',
+                        'gorefiend',
+                        'decapitator'
+                    },
+                    talents = {
+                        {
+                            id = 'T_STEAMSAW_MASTERY',
+                            is_signature = true
+                        },
+                        'T_OVERHEAT_SAWS',
+                        'T_TEMPEST_OF_METAL',
+                        'T_OVERCHARGE_SAWS',
+                        'T_TO_THE_ARMS',
+                        'T_BLOODSTREAM',
+                        'T_SPINAL_BREAK',
+                        'T_SAW_WHEELS',
+                        'T_GRINDING_SHIELD',
+                        'T_PUNISHMENT',
+                        'T_CONTINUOUS_BUTCHERY'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'Cut, cut, cut, cut!',
+                        _t'They spin so hypnotically...',
+                        _t'Dismember, maim, cut, disembowel!'
+                    }
+                }
             }
 
             -- TODO
