@@ -873,11 +873,42 @@ function _M:setup_resourceful_wanderers()
                         _t'Dismember, maim, cut, disembowel!'
                     }
                 }
+            },
+            stealth = {
+                cover_talent_types = {
+                    'technique/assassination',
+                    'cunning/ambush'
+                },
+                talent_type = {
+                    names = {
+                        'sneak',
+                        'thief',
+                        'burglar'
+                    },
+                    talents = {
+                        {
+                            id = 'T_STEALTH',
+                            is_signature = true
+                        },
+                        'T_SHADOWSTRIKE',
+                        'T_SOOTHING_DARKNESS',
+                        'T_SHADOW_DANCE',
+                        'T_COUP_DE_GRACE',
+                        'T_TERRORIZE',
+                        'T_GARROTE',
+                        'T_MARKED_FOR_DEATH'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'I can definitely slip by.',
+                        _t'Exploit the weakpoint.',
+                        _t'They\'ll never see me coming...'
+                    }
+                }
             }
 
             -- TODO
             -- cunning/called-shots (slings)
-            -- stealth: cunning/ambush
         }
 
         for _, name_pool in pairs(self.talent_type_name_pools) do
