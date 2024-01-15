@@ -21,14 +21,14 @@ function _M:setup_resourceful_wanderers()
             {
                 'T_AGILE_DEFENSE',
                 'T_SKIRMISHER_BUCKLER_EXPERTISE',
-                'T_STONESHIELD'
+                'T_STONESHIELD',
+                'T_STATIC_SHOCK'
             },
             {
                 'T_MASTER_MARKSMAN',
                 'T_SKIRMISHER_SLING_SUPREMACY'
             },
-            {
-                'T_STRENGTH_OF_PURPOSE',
+            T_STRENGTH_OF_PURPOSE = {
                 'T_MASTER_MARKSMAN',
                 'T_WEAPONS_MASTERY',
                 'T_KNIFE_MASTERY'
@@ -392,39 +392,65 @@ function _M:setup_resourceful_wanderers()
                             {
                                 amount = 1,
                                 data = {
-                                    defined='APE',
-                                    base_list='mod.class.Object:/data-orcs/general/objects/quest-artifacts.lua'
+                                    defined = 'APE',
+                                    base_list = 'mod.class.Object:/data-orcs/general/objects/quest-artifacts.lua'
                                 },
                                 transmogrify = false
                             },
                             {
-                                amount = 2,
+                                amount = 1,
                                 data = {
-                                    type='scroll',
-                                    subtype='implant',
-                                    name='steam generator implant',
-                                    base_list='mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
-                                    ego_chance=-1000
+                                    defined = 'TINKER_HEALING_SALVE1',
+                                    base_list = 'mod.class.Object:/data-orcs/general/objects/tinker.lua',
+                                    ego_chance = -1000
+                                }
+                            },
+                            {
+                                amount = 1,
+                                data = {
+                                    defined = 'TINKER_FROST_SALVE1',
+                                    base_list = 'mod.class.Object:/data-orcs/general/objects/tinker.lua',
+                                    ego_chance = -1000
                                 }
                             },
                             {
                                 amount = 2,
                                 data = {
-                                    type='weapon',
-                                    subtype='steamsaw',
-                                    name='iron steamsaw',
-                                    base_list='mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
-                                    ego_chance=-1000
+                                    type = 'scroll',
+                                    subtype = 'implant',
+                                    name = 'medical injector implant',
+                                    base_list = 'mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
+                                    ego_chance = -1000
                                 }
                             },
                             {
                                 amount = 2,
                                 data = {
-                                    type='weapon',
-                                    subtype='steamgun',
-                                    name='iron steamgun',
-                                    base_list='mod.class.Object:/data-orcs/general/objects/steamgun.lua',
-                                    ego_chance=-1000
+                                    type = 'scroll',
+                                    subtype = 'implant',
+                                    name = 'steam generator implant',
+                                    base_list = 'mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
+                                    ego_chance = -1000
+                                }
+                            },
+                            {
+                                amount = 2,
+                                data = {
+                                    type = 'weapon',
+                                    subtype = 'steamsaw',
+                                    name = 'iron steamsaw',
+                                    base_list = 'mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
+                                    ego_chance = - 1000
+                                }
+                            },
+                            {
+                                amount = 2,
+                                data = {
+                                    type = 'weapon',
+                                    subtype = 'steamgun',
+                                    name = 'iron steamgun',
+                                    base_list = 'mod.class.Object:/data-orcs/general/objects/steamgun.lua',
+                                    ego_chance = -1000
                                 }
                             }
                         }
@@ -1444,21 +1470,40 @@ function _M:setup_resourceful_wanderers()
 
     -- Gets all competing mastery talents for the given talent
     function resourceful_wanderers:get_competing_mastery_talents(talent_id)
-        local competing_talents = { }
-        for _, group in ipairs(resourceful_wanderers.weapon_mastery_talent_groups) do
-            local is_competing_group = false
-            local other_talents = { }
-            for _, group_talent in ipairs(group) do
-                if group_talent == talent_id then
-                    is_competing_group = true
-                else
-                    table.insert(other_talents, group_talent)
-                end
-            end
+        return self:get_competing_mastery_talents_with_groups(talent_id, resourceful_wanderers.weapon_mastery_talent_groups)
+    end
 
-            if is_competing_group then
-                for _, other_talent in ipairs(other_talents) do
+    -- Gets all competing mastery talents for the given talent
+    function resourceful_wanderers:get_competing_mastery_talents_with_groups(talent_id, groups)
+        local competing_talents = { }
+        for main_talent_id, group in pairs(groups) do
+            if type(main_talent_id) == 'string' then
+                local subgroups = { }
+                for _, group_talent in ipairs(group) do
+                    table.insert(subgroups, {
+                        main_talent_id,
+                        group_talent
+                    })
+                end
+
+                for _, other_talent in ipairs(self:get_competing_mastery_talents_with_groups(talent_id, subgroups)) do
                     table.insert(competing_talents, other_talent)
+                end
+            else
+                local is_competing_group = false
+                local other_talents = { }
+                for _, group_talent in ipairs(group) do
+                    if group_talent == talent_id then
+                        is_competing_group = true
+                    else
+                        table.insert(other_talents, group_talent)
+                    end
+                end
+
+                if is_competing_group then
+                    for _, other_talent in ipairs(other_talents) do
+                        table.insert(competing_talents, other_talent)
+                    end
                 end
             end
         end

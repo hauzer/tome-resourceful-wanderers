@@ -23,10 +23,16 @@ function _M:numberKnownTalent(type, ...)
 
     for _, talent in ipairs(self.talents_types_def[type].talents) do
         if not self:knowTalent(talent.id) then
+            local knows_competing_talent = false
             for _, competing_talent in ipairs(resourceful_wanderers:get_competing_mastery_talents(talent.id)) do
                 if self:knowTalent(competing_talent) then
-                    retval = retval + 1
+                    knows_competing_talent = true
+                    break
                 end
+            end
+
+            if knows_competing_talent then
+                retval = retval + 1
             end
         end
     end
@@ -75,8 +81,29 @@ function _M:getTalentReqDesc(t_id, levmod)
         return base_getTalentReqDesc(self, t_id, levmod)
     end
 
-    return resourceful_wanderers:with_managed_talent(self.talents_def[t_id], function(talent_type, ...)
+    return resourceful_wanderers:with_managed_talent(self.talents_def[t_id], function(talent_type, _, tome_talent)
+        local tome_talent_type_2 = tome_talent.type[2]
+        for _, sibling_talent in ipairs(self.talents_types_def[tome_talent.type[1]].talents) do
+            if sibling_talent.id == t_id then
+                break
+            end
+
+            local knows_competing_talent = false
+            for _, competing_talent_id in ipairs(resourceful_wanderers:get_competing_mastery_talents(sibling_talent.id)) do
+                if self:knowTalent(competing_talent_id) then
+                    knows_competing_talent = true
+                    break
+                end
+            end
+
+            if knows_competing_talent then
+                tome_talent.type[2] = tome_talent.type[2] - 1
+            end
+        end
+
         local str = base_getTalentReqDesc(self, t_id, levmod)
+
+        tome_talent.type[2] = tome_talent_type_2
 
         if not self:knowTalent(t_id) then
             if talent_type ~= nil and talent_type.talent_learn_limit ~= nil then
