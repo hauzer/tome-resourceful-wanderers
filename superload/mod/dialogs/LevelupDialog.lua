@@ -38,12 +38,12 @@ function _M:generateList()
 
             for i, talent in ipairs(tome_talent_type.talents) do
                 if resourceful_wanderers:is_talent_type_from_area(talent_type_id) then
-                    if not talent.orig_levelup_screen_break_line then
+                    if talent.orig_levelup_screen_break_line == nil then
                         talent.orig_levelup_screen_break_line = talent.levelup_screen_break_line
                     end
 
                     talent.levelup_screen_break_line = i % 4 == 0 and i ~= #tome_talent_type.talents
-                elseif talent.orig_levelup_screen_break_line then
+                elseif talent.orig_levelup_screen_break_line ~= nil then
                     talent.levelup_screen_break_line = talent.orig_levelup_screen_break_line
                     talent.orig_levelup_screen_break_line = nil
                 end

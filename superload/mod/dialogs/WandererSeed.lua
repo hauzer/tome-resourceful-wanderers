@@ -192,6 +192,39 @@ function _M:setup_resourceful_wanderers()
                     }
                 }
             },
+            summons = {
+                cover_talent_types = {
+                    'wild-gift/summon-advanced',
+                    'wild-gift/summon-augmentation',
+                    'wild-gift/summon-utility'
+                },
+                talent_type = {
+                    names = {
+                        'druid',
+                        'ranger',
+                        'shepherd'
+                    },
+                    talents = {
+                        'T_RITCH_FLAMESPITTER',
+                        'T_HYDRA',
+                        'T_RIMEBARK',
+                        'T_FIRE_DRAKE',
+                        'T_WAR_HOUND',
+                        'T_JELLY',
+                        'T_MINOTAUR',
+                        'T_STONE_GOLEM',
+                        'T_TURTLE',
+                        'T_SPIDER'
+                    },
+                    max_talents = 8,
+                    talent_learn_limit = 6,
+                    descriptions = {
+                        _t'The various animals all have specific instincts one needs to be aware of.',
+                        _t'The ecosystem is a delicate place, where both life and death have their proper place.',
+                        _t'Do not show fear and malice towards beasts, and you may still learn something from them.'
+                    }
+                }
+            },
             souls = {
                 cover_talent_types = {
                     'spell/age-of-dusk',
@@ -463,7 +496,6 @@ function _M:setup_resourceful_wanderers()
                         }
                     },
                     max_talents = 8,
-                    disown_remove_treshold = 4,
                     talent_learn_limit = 4,
                     descriptions = {
                         _t'Didn\'t I have this deja vu already? Deja-deja vu?',
@@ -663,7 +695,11 @@ function _M:setup_resourceful_wanderers()
             ['spell/explosives'] = {
                 talent_type = 'stone-alchemy'
             },
-            ['spell/aether'] = {
+            magic = {
+                cover_talent_types = {
+                    'spell/aether',
+                    'spell/meta'
+                },
                 talent_type = {
                     names = {
                         'apprentice',
@@ -1059,7 +1095,7 @@ function _M:setup_resourceful_wanderers()
                     names = {
                         'marksman',
                         'hunter',
-                        'ranger'
+                        'bowman'
                     },
                     talents = {
                         {
@@ -1082,6 +1118,29 @@ function _M:setup_resourceful_wanderers()
                         _t'I will pierce your heart.',
                         _t'Steady, steady... Fire!',
                         _t'Mind the wind, adjust the trajectory...'
+                    }
+                }
+            },
+            ['wild-gift/higher-draconic'] = {
+                talent_type = {
+                    names = {
+                        'drakeborn',
+                        'wyrmborn',
+                        'dragonborn'
+                    },
+                    talents = {
+                        'T_ICE_BREATH',
+                        'T_FIRE_BREATH',
+                        'T_SAND_BREATH',
+                        'T_LIGHTNING_BREATH',
+                        'T_CORROSIVE_BREATH'
+                    },
+                    max_talents = 4,
+                    disown_remove_treshold = 1,
+                    descriptions = {
+                        _t'Sieze the gifts your bloodline has given you.',
+                        _t'You feel power coursing through your veins!',
+                        _t'Fus Ro Dah!'
                     }
                 }
             }
@@ -1608,6 +1667,11 @@ function _M:setup_resourceful_wanderers()
                 if self.actor:knowTalentType(talent_type.name) ~= nil then
                     self.actor.talents_types_def[talent_type.name].talents = tome_talents_to_keep
                 end
+
+                if talent_type.talent_learn_limit then
+                    talent_type.talent_learn_limit = talent_type.talent_learn_limit - (#talent_type.talents - #talents_to_keep)
+                end
+
                 talent_type.talents = talents_to_keep
 
                 -- Remove the talent type completely if:
@@ -1620,6 +1684,7 @@ function _M:setup_resourceful_wanderers()
                     (
                         #talent_type.talents <= talent_type.own_remove_treshold or
                         talent_type.disown_remove_treshold <= 0 or
+                        (talent_type.talent_learn_limit ~= nil and talent_type.talent_learn_limit <= 0) or
                         was_signature_talent_removed
                     ) and
                     not has_sticky_talents
