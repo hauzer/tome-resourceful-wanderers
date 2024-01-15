@@ -901,8 +901,29 @@ function _M:setup_resourceful_wanderers()
                     max_talents = 4,
                     descriptions = {
                         _t'I can definitely slip by.',
-                        _t'Exploit the weakpoint.',
+                        _t'Exploit their weakpoint.',
                         _t'They\'ll never see me coming...'
+                    }
+                }
+            },
+            ['technique/magical-combat'] = {
+                talent_type = {
+                    names = {
+                        'spellsword',
+                        'battlemage',
+                        'hexsword'
+                    },
+                    mastery = 0,
+                    talents = {
+                        'T_FLAME',
+                        'T_LIGHTNING',
+                        'T_EARTHEN_MISSILES'
+                    },
+                    disown_remove_treshold = 1,
+                    descriptions = {
+                        _t'Sword and sorcery!',
+                        _t'Why not both?',
+                        _t'Where are the naysayers who told me I should specialize?'
                     }
                 }
             }
