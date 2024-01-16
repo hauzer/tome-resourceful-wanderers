@@ -1468,6 +1468,17 @@ function _M:setup_resourceful_wanderers()
         }}
     end
 
+    -- Check if actor knows any competing mastery talent for the given talent
+    function resourceful_wanderers:knows_competing_mastery_talent(talent_id)
+        for _, competing_talent_id in ipairs(self:get_competing_mastery_talents(talent_id)) do
+            if self:knowTalent(competing_talent_id) then
+                return true
+            end
+        end
+
+        return false
+    end
+
     -- Gets all competing mastery talents for the given talent
     function resourceful_wanderers:get_competing_mastery_talents(talent_id)
         return self:get_competing_mastery_talents_with_groups(talent_id, resourceful_wanderers.weapon_mastery_talent_groups)
@@ -1532,6 +1543,16 @@ function _M:setup_resourceful_wanderers()
         end
 
         return false
+    end
+
+    -- Does a talent type have a limit of learned talents?
+    function resourceful_wanderers:does_talent_type_have_limit(talent_type)
+        return talent_type ~= nil and talent_type.talent_learn_limit ~= nil
+    end
+
+    -- Check if any more talents can be learned in the talent type
+    function resourceful_wanderers:is_talent_type_at_limit(talent_type)
+        return self:does_talent_type_have_limit(talent_type) and self:get_talent_type_number_of_known_talents(talent_type.name) >= talent_type.talent_learn_limit
     end
 
     -- Get talent type number of known talents
@@ -1992,19 +2013,6 @@ function _M:setup_resourceful_wanderers()
             '\nIf this category is removed, any invested category and talent points will be refunded.'
     end
 
-    -- Called before the player learns a talent type
-    function resourceful_wanderers:after_learnTalentType(talent_type_id)
-        if not self.actor.talents_types_def[talent_type_id] then
-            return
-        end
-
-        self:unmanage_talent_type(talent_type_id)
-
-        for _, covering_area in ipairs(self:find_covering_areas_for_talent_type(talent_type_id)) do
-            self:cover_area(covering_area)
-        end
-    end
-
     resourceful_wanderers:construct(game.player)
 end
 
@@ -2013,7 +2021,7 @@ function _M:makeWanderer()
     -- We need to delay calls to randventurerLearn() and indirectly to learnTalentType() so we can use the seed
     local randventurerLearn_calls = {}
     local base_randventurerLearn = self.actor.randventurerLearn
-    self.actor.randventurerLearn = function(self, what, silent)
+    self.actor.randventurerLearn = function(_, what, silent)
         table.insert(randventurerLearn_calls, {
             what = what,
             silent = silent
