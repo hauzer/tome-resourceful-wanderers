@@ -1,5 +1,3 @@
----@diagnostic disable: lowercase-global
-
 for_module = 'tome'
 long_name = 'Resourceful Wanderers'
 short_name = 'resourceful-wanderers'
@@ -15,7 +13,7 @@ tags = {
     'souls', 'soul', 'insanity', 'generation', 'steamtech', 'wild gift', 'wildgift'
 }
 
-overload = false
+overload = true
 superload = true
 data = false
 hooks = false
