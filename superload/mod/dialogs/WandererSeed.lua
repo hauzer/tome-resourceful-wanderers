@@ -385,92 +385,107 @@ function _M:setup_resourceful_wanderers()
                         _t'Now, if I could just polarize this power converter...',
                         _t'*BANG!* *BANG!* *BANG!* Ooh, science is tough work!',
                         _t'Maybe the old professor was onto something.'
-                    },
-                    on_cover = function(self, log_message)
-                        -- Give the player some basic steamtech items
-                        local items = {
-                            {
-                                amount = 1,
-                                data = {
-                                    defined = 'APE',
-                                    base_list = 'mod.class.Object:/data-orcs/general/objects/quest-artifacts.lua'
-                                },
-                                transmogrify = false
+                    }
+                }
+            },
+            ['steamtech-base'] = {
+                addon = 'orcs',
+                cover_category = 'steamtech',
+                cover_talent_types = {
+                    'psionic/action-at-a-distance',
+                    'psionic/gestalt',
+                    'psionic/psionic-fog'
+                },
+                ignore_talent_types = {
+                    'steamtech/blacksmith'
+                },
+                on_cover = function()
+                    -- Give the player some basic steamtech items
+                    local items = {
+                        {
+                            amount = 1,
+                            data = {
+                                defined = 'APE',
+                                base_list = 'mod.class.Object:/data-orcs/general/objects/quest-artifacts.lua'
                             },
-                            {
-                                amount = 1,
-                                data = {
-                                    defined = 'TINKER_HEALING_SALVE1',
-                                    base_list = 'mod.class.Object:/data-orcs/general/objects/tinker.lua',
-                                    ego_chance = -1000
-                                }
-                            },
-                            {
-                                amount = 1,
-                                data = {
-                                    defined = 'TINKER_FROST_SALVE1',
-                                    base_list = 'mod.class.Object:/data-orcs/general/objects/tinker.lua',
-                                    ego_chance = -1000
-                                }
-                            },
-                            {
-                                amount = 2,
-                                data = {
-                                    type = 'scroll',
-                                    subtype = 'implant',
-                                    name = 'medical injector implant',
-                                    base_list = 'mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
-                                    ego_chance = -1000
-                                }
-                            },
-                            {
-                                amount = 2,
-                                data = {
-                                    type = 'scroll',
-                                    subtype = 'implant',
-                                    name = 'steam generator implant',
-                                    base_list = 'mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
-                                    ego_chance = -1000
-                                }
-                            },
-                            {
-                                amount = 2,
-                                data = {
-                                    type = 'weapon',
-                                    subtype = 'steamsaw',
-                                    name = 'iron steamsaw',
-                                    base_list = 'mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
-                                    ego_chance = - 1000
-                                }
-                            },
-                            {
-                                amount = 2,
-                                data = {
-                                    type = 'weapon',
-                                    subtype = 'steamgun',
-                                    name = 'iron steamgun',
-                                    base_list = 'mod.class.Object:/data-orcs/general/objects/steamgun.lua',
-                                    ego_chance = -1000
-                                }
+                            transmogrify = false
+                        },
+                        {
+                            amount = 1,
+                            data = {
+                                defined = 'TINKER_HEALING_SALVE1',
+                                base_list = 'mod.class.Object:/data-orcs/general/objects/tinker.lua',
+                                ego_chance = -1000
+                            }
+                        },
+                        {
+                            amount = 1,
+                            data = {
+                                defined = 'TINKER_FROST_SALVE1',
+                                base_list = 'mod.class.Object:/data-orcs/general/objects/tinker.lua',
+                                ego_chance = -1000
+                            }
+                        },
+                        {
+                            amount = 2,
+                            data = {
+                                type = 'scroll',
+                                subtype = 'implant',
+                                name = 'medical injector implant',
+                                base_list = 'mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
+                                ego_chance = -1000
+                            }
+                        },
+                        {
+                            amount = 2,
+                            data = {
+                                type = 'scroll',
+                                subtype = 'implant',
+                                name = 'steam generator implant',
+                                base_list = 'mod.class.Object:/data-orcs/general/objects/inscriptions.lua',
+                                ego_chance = -1000
+                            }
+                        },
+                        {
+                            amount = 2,
+                            data = {
+                                type = 'weapon',
+                                subtype = 'steamsaw',
+                                name = 'iron steamsaw',
+                                base_list = 'mod.class.Object:/data-orcs/general/objects/steamsaw.lua',
+                                ego_chance = - 1000
+                            }
+                        },
+                        {
+                            amount = 2,
+                            data = {
+                                type = 'weapon',
+                                subtype = 'steamgun',
+                                name = 'iron steamgun',
+                                base_list = 'mod.class.Object:/data-orcs/general/objects/steamgun.lua',
+                                ego_chance = -1000
                             }
                         }
+                    }
 
-                        for _, item in ipairs(items) do
-                            for _ = 1, item.amount do
-                                local object = resolvers.resolveObject(resourceful_wanderers.actor, item.data)
-                                if item.transmogrify ~= nil then
-                                    object.__transmo = item.transmogrify
-                                else
-                                    object.__transmo = true
-                                end
-
-                                object:identify(true)
+                    resourceful_wanderers.items = resourceful_wanderers.items or { }
+                    for _, item in ipairs(items) do
+                        for _ = 1, item.amount do
+                            local object = resolvers.resolveObject(resourceful_wanderers.actor, item.data)
+                            if item.transmogrify ~= nil then
+                                object.__transmo = item.transmogrify
+                            else
+                                object.__transmo = true
                             end
-                        end
 
-                        log_message.data = log_message.data .. ' You also find some gadgets.'
+                            object:identify(true)
+
+                            table.insert(resourceful_wanderers.items, object)
+                        end
                     end
-                }
+
+                    game.log('You find some gadgets.')
+                end
             },
             ['chronomancy/spellbinding'] = {
                 talent_type = {
@@ -834,7 +849,6 @@ function _M:setup_resourceful_wanderers()
                         'T_SUPERCHARGE_BULLETS',
                         'T_PERCUSSIVE_BULLETS',
                         'T_COMBUSTIVE_BULLETS',
-                        'T_DOUBLE_SHOTS',
                         'T_UNCANNY_RELOAD',
                         'T_STATIC_SHOT'
                     },
@@ -900,7 +914,6 @@ function _M:setup_resourceful_wanderers()
                         'T_BOILING_SHOT',
                         'T_BLUNT_SHOT',
                         'T_VACUUM_SHOT',
-                        'T_DOUBLE_SHOTS',
                         'T_UNCANNY_RELOAD',
                         'T_STATIC_SHOT',
                         'T_LUCID_SHOT',
@@ -1230,7 +1243,7 @@ function _M:setup_resourceful_wanderers()
                 name = area_name,
                 is_covered = false,
                 addons = addons,
-                on_cover = area_declarations.on_cover or function(_) end
+                on_cover = area_declaration.on_cover or function(...) end
             }
 
             -- Normalize cover/ignore properties
@@ -1266,6 +1279,8 @@ function _M:setup_resourceful_wanderers()
             if not area_declaration.talent_type_groups then
                 if area_declaration.talent_type then
                     area.talent_types = { resourceful_wanderers:define_talent_type(area_declaration.talent_type) }
+                elseif area_declaration.talent_type_group then
+                    area.talent_types = resourceful_wanderers:define_talent_types({ area_declaration.talent_type_group })
                 elseif area_declaration.talent_types then
                     local talent_type_group_declarations = { }
                     for _, talent_type_declaration in ipairs(area_declaration.talent_types) do
@@ -1273,15 +1288,15 @@ function _M:setup_resourceful_wanderers()
                     end
 
                     area.talent_types = resourceful_wanderers:define_talent_types(talent_type_group_declarations)
-                elseif area_declaration.talent_type_group then
-                    area.talent_types = resourceful_wanderers:define_talent_types({ area_declaration.talent_type_group })
+                else
+                    area.talent_types = { }
                 end
             else
                 area.talent_types = resourceful_wanderers:define_talent_types(area_declaration.talent_type_groups)
             end
 
             -- If the area has no talents, skip it
-            if area.talent_types == nil or #area.talent_types == 0 then
+            if #area.talent_types == 0 and area.on_cover == nil then
                 goto next_area_declaration
             end
 
@@ -1346,7 +1361,7 @@ function _M:setup_resourceful_wanderers()
         local talent_type = {
             addons = addons,
             talent_learn_limit = talent_type_declaration.talent_learn_limit,
-            on_cover = talent_type_declaration.on_cover or function(_, _) end
+            on_cover = talent_type_declaration.on_cover or function(...) end
         }
 
         -- Normalize declaration properties and create the talent type
@@ -1468,6 +1483,17 @@ function _M:setup_resourceful_wanderers()
         }}
     end
 
+    -- Check if actor knows any competing mastery talent for the given talent
+    function resourceful_wanderers:knows_competing_mastery_talent(talent_id)
+        for _, competing_talent_id in ipairs(self:get_competing_mastery_talents(talent_id)) do
+            if self.actor:knowTalent(competing_talent_id) then
+                return true
+            end
+        end
+
+        return false
+    end
+
     -- Gets all competing mastery talents for the given talent
     function resourceful_wanderers:get_competing_mastery_talents(talent_id)
         return self:get_competing_mastery_talents_with_groups(talent_id, resourceful_wanderers.weapon_mastery_talent_groups)
@@ -1532,6 +1558,16 @@ function _M:setup_resourceful_wanderers()
         end
 
         return false
+    end
+
+    -- Does a talent type have a limit of learned talents?
+    function resourceful_wanderers:does_talent_type_have_limit(talent_type)
+        return talent_type ~= nil and talent_type.talent_learn_limit ~= nil
+    end
+
+    -- Check if any more talents can be learned in the talent type
+    function resourceful_wanderers:is_talent_type_at_limit(talent_type)
+        return self:does_talent_type_have_limit(talent_type) and self:get_talent_type_number_of_known_talents(talent_type.name) >= talent_type.talent_learn_limit
     end
 
     -- Get talent type number of known talents
@@ -1829,7 +1865,7 @@ function _M:setup_resourceful_wanderers()
 
             -- Don't keep empty areas
             area.talent_types = talent_types_to_keep
-            if #area.talent_types > 0 then
+            if #area.talent_types > 0 or area.on_cover ~= nil then
                 table.insert(areas_to_keep, area)
             end
         end
@@ -1844,10 +1880,6 @@ function _M:setup_resourceful_wanderers()
         end
 
         area.is_covered = true
-
-        if #area.talent_types == 0 then
-            return
-        end
 
         -- Learn all area's talent types
         for _, talent_type in ipairs(area.talent_types) do
@@ -1917,7 +1949,7 @@ function _M:setup_resourceful_wanderers()
                 end
                 area_to_remove_from.talent_types = talent_types_to_keep
 
-                if #area_to_remove_from.talent_types == 0 then
+                if #area_to_remove_from.talent_types == 0 and area_to_remove_from.on_cover == nil then
                     -- If it's still referenced somewhere, ensure it isn't used until it deallocates
                     area_to_remove_from.is_covered = true
                     goto next_area_dont_keep
@@ -1946,7 +1978,7 @@ function _M:setup_resourceful_wanderers()
             game.log(log_message.data)
         end
 
-        area:on_cover()
+        area.on_cover()
     end
 
     function resourceful_wanderers:update_talent_type_description(talent_type)
@@ -1992,19 +2024,6 @@ function _M:setup_resourceful_wanderers()
             '\nIf this category is removed, any invested category and talent points will be refunded.'
     end
 
-    -- Called before the player learns a talent type
-    function resourceful_wanderers:after_learnTalentType(talent_type_id)
-        if not self.actor.talents_types_def[talent_type_id] then
-            return
-        end
-
-        self:unmanage_talent_type(talent_type_id)
-
-        for _, covering_area in ipairs(self:find_covering_areas_for_talent_type(talent_type_id)) do
-            self:cover_area(covering_area)
-        end
-    end
-
     resourceful_wanderers:construct(game.player)
 end
 
@@ -2013,7 +2032,7 @@ function _M:makeWanderer()
     -- We need to delay calls to randventurerLearn() and indirectly to learnTalentType() so we can use the seed
     local randventurerLearn_calls = {}
     local base_randventurerLearn = self.actor.randventurerLearn
-    self.actor.randventurerLearn = function(self, what, silent)
+    self.actor.randventurerLearn = function(_, what, silent)
         table.insert(randventurerLearn_calls, {
             what = what,
             silent = silent
