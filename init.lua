@@ -4,7 +4,7 @@ for_module = 'tome'
 long_name = 'Resourceful Wanderers'
 short_name = 'resourceful-wanderers'
 version = {1,7,6}
-addon_version = {2,0,0}
+addon_version = {2,1,0}
 weight = 100
 
 author = {'hauzer', 'hauzer.nv@gmail.com'}

@@ -166,7 +166,10 @@ function _M:setup_resourceful_wanderers()
                         },
                         is_generic = true,
                         talents = {
-                            'T_MEDITATION',
+                            {
+                                id = 'T_MEDITATION',
+                                is_signature = true
+                            },
                             'T_ANCESTRAL_LIFE',
                             'T_HEALING_NEXUS'
                         },
@@ -831,7 +834,8 @@ function _M:setup_resourceful_wanderers()
                 cover_talent_types = {
                     'steamtech/artillery',
                     'steamtech/heavy-weapons',
-                    'steamtech/chemical-warfare'
+                    'steamtech/chemical-warfare',
+                    'steamtech/demolition'
                 },
                 addon = 'orcs',
                 talent_type = {
@@ -845,10 +849,9 @@ function _M:setup_resourceful_wanderers()
                             id = 'T_AUTOLOADER',
                             is_signature = true
                         },
-                        'T_OVERHEAT_BULLETS',
-                        'T_SUPERCHARGE_BULLETS',
-                        'T_PERCUSSIVE_BULLETS',
-                        'T_COMBUSTIVE_BULLETS',
+                        'T_GRENADE_LAUNCHER',
+                        'T_EXOSKELETON',
+                        'T_AED',
                         'T_UNCANNY_RELOAD',
                         'T_STATIC_SHOT'
                     },
@@ -884,7 +887,11 @@ function _M:setup_resourceful_wanderers()
                         'T_TRICK_SHOT',
                         'T_DOUBLE_SHOTS',
                         'T_UNCANNY_RELOAD',
-                        'T_STATIC_SHOT'
+                        'T_STATIC_SHOT',
+                        'T_OVERHEAT_BULLETS',
+                        'T_SUPERCHARGE_BULLETS',
+                        'T_PERCUSSIVE_BULLETS',
+                        'T_COMBUSTIVE_BULLETS'
                     },
                     max_talents = 4,
                     descriptions = {
@@ -1186,6 +1193,40 @@ function _M:setup_resourceful_wanderers()
                         _t'Sieze the gifts your bloodline has given you.',
                         _t'You feel power coursing through your veins!',
                         _t'Fus Ro Dah!'
+                    }
+                }
+            },
+            {
+                cover_talent_types = {
+                    'chronomancy/bow-threading',
+                    'chronomancy/threaded-combat'
+                },
+                talent_type = {
+                    names = {
+                        'temporalist',
+                        'illusionist',
+                        'tactician'
+                    },
+                    talents = {
+                        {
+                            id = 'T_STRENGTH_OF_PURPOSE',
+                            is_signature = true
+                        },
+                        'T_THREAD_WALK',
+                        'T_THREAD_THE_NEEDLE',
+                        'T_WARDEN_S_CALL',
+                        'T_ARROW_STITCHING',
+                        'T_SINGULARITY_ARROW',
+                        'T_ARROW_ECHOES',
+                        'T_WARP_BLADE',
+                        'T_BLINK_BLADE',
+                        'T_BLADE_SHEAR'
+                    },
+                    max_talents = 4,
+                    descriptions = {
+                        _t'Pace your movement, absorb every moment that was and is going to be, and seize the moment at hand.',
+                        _t'There\'s no need for fancy weapon-specific techniques if you can simply predict your opponent\'s every move.',
+                        _t'Play out the battle a hundred times in your mind as you fight it. Come at it every angle, and there will be no surprises.'
                     }
                 }
             }
@@ -1760,8 +1801,6 @@ function _M:setup_resourceful_wanderers()
                 if self.actor:knowTalentType(talent_type.name) ~= nil then
                     self.actor.talents_types_def[talent_type.name].talents = tome_talents_to_keep
                 end
-
-
 
                 talent_type.talents = talents_to_keep
 
