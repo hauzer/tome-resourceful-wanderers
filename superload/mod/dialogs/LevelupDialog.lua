@@ -6,9 +6,15 @@ local subtleMessageWarningColor = { r=255, g=255, b=80 }
 
 local base_learnType = _M.learnType
 function _M:learnType(tt, v)
-    local resourceful_wanderers = game:get_resourceful_wanderers()
-    if self.actor ~= game.player or not resourceful_wanderers.is_active then
+    local resourceful_wanderers
+    if self.actor ~= game.player then
         return base_learnType(self, tt, v)
+    else
+        resourceful_wanderers = self.actor:get_resourceful_wanderers()
+
+        if not resourceful_wanderers.is_active then
+            return base_learnType(self, tt, v)
+        end
     end
 
     if v then
@@ -25,9 +31,15 @@ end
 
 local base_generateList = _M.generateList
 function _M:generateList()
-    local resourceful_wanderers = game:get_resourceful_wanderers()
-    if self.actor ~= game.player or not resourceful_wanderers.is_active then
+    local resourceful_wanderers
+    if self.actor ~= game.player then
         return base_generateList(self)
+    else
+        resourceful_wanderers = self.actor:get_resourceful_wanderers()
+
+        if not resourceful_wanderers.is_active then
+            return base_generateList(self)
+        end
     end
 
     self.actor.is_generating_list = true

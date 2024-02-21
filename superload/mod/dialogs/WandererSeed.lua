@@ -6,9 +6,7 @@ _M = loadPrevious(...)
 
 
 function _M:setup_resourceful_wanderers()
-    local resourceful_wanderers = game.resourceful_wanderers
-
-    function resourceful_wanderers:construct(actor)
+    function game.player.resourceful_wanderers:construct(actor)
         self.is_active = true
         self.actor = actor
 
@@ -471,10 +469,10 @@ function _M:setup_resourceful_wanderers()
                         }
                     }
 
-                    resourceful_wanderers.items = resourceful_wanderers.items or { }
+                    game.player.resourceful_wanderers.items = game.player.resourceful_wanderers.items or { }
                     for _, item in ipairs(items) do
                         for _ = 1, item.amount do
-                            local object = resolvers.resolveObject(resourceful_wanderers.actor, item.data)
+                            local object = resolvers.resolveObject(game.player.resourceful_wanderers.actor, item.data)
                             if item.transmogrify ~= nil then
                                 object.__transmo = item.transmogrify
                             else
@@ -483,7 +481,7 @@ function _M:setup_resourceful_wanderers()
 
                             object:identify(true)
 
-                            table.insert(resourceful_wanderers.items, object)
+                            table.insert(game.player.resourceful_wanderers.items, object)
                         end
                     end
 
@@ -1263,7 +1261,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Define areas from area declarations
-    function resourceful_wanderers:define_areas(area_declarations)
+    function game.player.resourceful_wanderers:define_areas(area_declarations)
         local areas = { }
         for area_name, area_declaration in pairs(area_declarations) do
             -- Skip area if it doesn't meet addon requirements
@@ -1319,21 +1317,21 @@ function _M:setup_resourceful_wanderers()
             -- Normalize talent properties
             if not area_declaration.talent_type_groups then
                 if area_declaration.talent_type then
-                    area.talent_types = { resourceful_wanderers:define_talent_type(area_declaration.talent_type) }
+                    area.talent_types = { self:define_talent_type(area_declaration.talent_type) }
                 elseif area_declaration.talent_type_group then
-                    area.talent_types = resourceful_wanderers:define_talent_types({ area_declaration.talent_type_group })
+                    area.talent_types = self:define_talent_types({ area_declaration.talent_type_group })
                 elseif area_declaration.talent_types then
                     local talent_type_group_declarations = { }
                     for _, talent_type_declaration in ipairs(area_declaration.talent_types) do
                         table.insert(talent_type_group_declarations, { talent_type_declaration })
                     end
 
-                    area.talent_types = resourceful_wanderers:define_talent_types(talent_type_group_declarations)
+                    area.talent_types = self:define_talent_types(talent_type_group_declarations)
                 else
                     area.talent_types = { }
                 end
             else
-                area.talent_types = resourceful_wanderers:define_talent_types(area_declaration.talent_type_groups)
+                area.talent_types = self:define_talent_types(area_declaration.talent_type_groups)
             end
 
             -- If the area has no talents, skip it
@@ -1352,12 +1350,12 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Define talent types of an area from a declaration of groups of talent types
-    function resourceful_wanderers:define_talent_types(talent_type_group_declarations)
+    function game.player.resourceful_wanderers:define_talent_types(talent_type_group_declarations)
         local talent_type_groups = { }
         for _, talent_type_group_declaration in ipairs(talent_type_group_declarations) do
             local talent_type_group = { }
             for _, talent_type_declaration in ipairs(talent_type_group_declaration) do
-                table.insert(talent_type_group, resourceful_wanderers:define_talent_type(talent_type_declaration))
+                table.insert(talent_type_group, self:define_talent_type(talent_type_declaration))
             end
 
             if talent_type_group ~= nil and #talent_type_group > 0 then
@@ -1375,7 +1373,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Define an area talent type from a talent type from either a string, or a declaration
-    function resourceful_wanderers:define_talent_type(talent_type_declaration)
+    function game.player.resourceful_wanderers:define_talent_type(talent_type_declaration)
         if type(talent_type_declaration) == 'string' and self.talent_types then
             return self.talent_types[talent_type_declaration]
         else
@@ -1384,7 +1382,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Define an area talent type from a talent type declaration
-    function resourceful_wanderers:define_talent_type_full(talent_type_declaration)
+    function game.player.resourceful_wanderers:define_talent_type_full(talent_type_declaration)
         -- Skip talent type if it doesn't meet addon requirements
         local addons
         if talent_type_declaration.addon then
@@ -1452,7 +1450,7 @@ function _M:setup_resourceful_wanderers()
 
         local talents = { }
         for _, talent_declaration in ipairs(talent_type.talents) do
-            for _, talent in ipairs(resourceful_wanderers:define_talents(talent_declaration)) do
+            for _, talent in ipairs(self:define_talents(talent_declaration)) do
                 table.insert(talents, talent)
             end
         end
@@ -1482,7 +1480,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Define area talents from a talent declaration
-    function resourceful_wanderers:define_talents(talent_declaration)
+    function game.player.resourceful_wanderers:define_talents(talent_declaration)
         if type(talent_declaration) ~= 'string' then
             -- Check if the talent declaration is a group of talents
             for k, _ in pairs(talent_declaration) do
@@ -1525,7 +1523,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Check if actor knows any competing mastery talent for the given talent
-    function resourceful_wanderers:knows_competing_mastery_talent(talent_id)
+    function game.player.resourceful_wanderers:knows_competing_mastery_talent(talent_id)
         for _, competing_talent_id in ipairs(self:get_competing_mastery_talents(talent_id)) do
             if self.actor:knowTalent(competing_talent_id) then
                 return true
@@ -1536,12 +1534,12 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Gets all competing mastery talents for the given talent
-    function resourceful_wanderers:get_competing_mastery_talents(talent_id)
-        return self:get_competing_mastery_talents_with_groups(talent_id, resourceful_wanderers.weapon_mastery_talent_groups)
+    function game.player.resourceful_wanderers:get_competing_mastery_talents(talent_id)
+        return self:get_competing_mastery_talents_with_groups(talent_id, self.weapon_mastery_talent_groups)
     end
 
     -- Gets all competing mastery talents for the given talent
-    function resourceful_wanderers:get_competing_mastery_talents_with_groups(talent_id, groups)
+    function game.player.resourceful_wanderers:get_competing_mastery_talents_with_groups(talent_id, groups)
         local competing_talents = { }
         for main_talent_id, group in pairs(groups) do
             if type(main_talent_id) == 'string' then
@@ -1579,7 +1577,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Get the area which defines the talent type
-    function resourceful_wanderers:get_talent_type_area(talent_type_id)
+    function game.player.resourceful_wanderers:get_talent_type_area(talent_type_id)
         for _, area in ipairs(self.areas) do
             for _, talent_type in ipairs(area.talent_types) do
                 if talent_type.name == talent_type_id then
@@ -1592,7 +1590,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Does an area define this talent type?
-    function resourceful_wanderers:is_talent_type_from_area(talent_type_id)
+    function game.player.resourceful_wanderers:is_talent_type_from_area(talent_type_id)
         local retval = self:get_talent_type_area(talent_type_id) ~= nil
         if retval ~= nil then
             return retval
@@ -1602,17 +1600,17 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Does a talent type have a limit of learned talents?
-    function resourceful_wanderers:does_talent_type_have_limit(talent_type)
+    function game.player.resourceful_wanderers:does_talent_type_have_limit(talent_type)
         return talent_type ~= nil and talent_type.talent_learn_limit ~= nil
     end
 
     -- Check if any more talents can be learned in the talent type
-    function resourceful_wanderers:is_talent_type_at_limit(talent_type)
+    function game.player.resourceful_wanderers:is_talent_type_at_limit(talent_type)
         return self:does_talent_type_have_limit(talent_type) and self:get_talent_type_number_of_known_talents(talent_type.name) >= talent_type.talent_learn_limit
     end
 
     -- Get talent type number of known talents
-    function resourceful_wanderers:get_talent_type_number_of_known_talents(talent_type_id)
+    function game.player.resourceful_wanderers:get_talent_type_number_of_known_talents(talent_type_id)
         local number_of_known_talents = 0
         for _, talent in ipairs(self.actor.talents_types_def[talent_type_id].talents) do
             if self.actor:knowTalent(talent.id) then
@@ -1624,7 +1622,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Returns all areas which cover the talent type
-    function resourceful_wanderers:find_covering_areas_for_talent_type(talent_type_id)
+    function game.player.resourceful_wanderers:find_covering_areas_for_talent_type(talent_type_id)
         local areas = { }
         for _, area in ipairs(self.areas) do
             if area.is_covered then
@@ -1664,7 +1662,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Make the talent, if it's managed, act as if it belongs to a wanderer category for the duration of the callback
-    function resourceful_wanderers:with_managed_talent(talent, callback)
+    function game.player.resourceful_wanderers:with_managed_talent(talent, callback)
         for _, area in ipairs(self.areas) do
             for _, talent_type in ipairs(area.talent_types) do
                 if self.actor:knowTalentType(talent_type.name) ~= nil then
@@ -1690,7 +1688,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Remove all talent type's talents from all areas
-    function resourceful_wanderers:unmanage_talent_type(talent_type_to_unmanage_id)
+    function game.player.resourceful_wanderers:unmanage_talent_type(talent_type_to_unmanage_id)
         local talent_type_to_unmanage_area = self:get_talent_type_area(talent_type_to_unmanage_id)
 
         local areas_to_keep = { }
@@ -1913,7 +1911,7 @@ function _M:setup_resourceful_wanderers()
     end
 
     -- Covers an area
-    function resourceful_wanderers:cover_area(area)
+    function game.player.resourceful_wanderers:cover_area(area)
         if area == nil or area.is_covered then
             return
         end
@@ -2020,7 +2018,7 @@ function _M:setup_resourceful_wanderers()
         area.on_cover()
     end
 
-    function resourceful_wanderers:update_talent_type_description(talent_type)
+    function game.player.resourceful_wanderers:update_talent_type_description(talent_type)
         local sticky_talent_names = { }
         local signature_talent_names = { }
         for _, talent in ipairs(talent_type.talents) do
@@ -2063,7 +2061,7 @@ function _M:setup_resourceful_wanderers()
             '\nIf this category is removed, any invested category and talent points will be refunded.'
     end
 
-    resourceful_wanderers:construct(game.player)
+    game.player.resourceful_wanderers:construct(game.player)
 end
 
 local base_makeWanderer = _M.makeWanderer

@@ -1,9 +1,33 @@
 _M = loadPrevious(...)
 
 
+function _M:get_resourceful_wanderers()
+    self.resourceful_wanderers = self.resourceful_wanderers or {
+        is_active = false
+    }
+
+    if self.resourceful_wanderers.is_active and not game.resourceful_wanderers_loaded then
+        game.resourceful_wanderers_loaded = true
+
+        if self.resourceful_wanderers.actor_talents_types_def ~= nil then
+            for tt_type, tt_def in pairs(self.resourceful_wanderers.actor_talents_types_def) do
+                if type(tt_type) == 'string' and tt_type:gsub('/.*', '') == 'wanderer' then
+                    self.talents_types_def[tt_type] = tt_def
+                    table.insert(self.talents_types_def, tt_def)
+                end
+            end
+        end
+
+        self.resourceful_wanderers.actor_talents_types_def = self.talents_types_def
+    end
+
+    return self.resourceful_wanderers
+end
+
+
 local base_knowTalentType = _M.knowTalentType
 function _M:knowTalentType(talent_type_id)
-    local resourceful_wanderers = game:get_resourceful_wanderers()
+    local resourceful_wanderers = self:get_resourceful_wanderers()
     if self.is_generating_list == nil or not self.is_generating_list or not resourceful_wanderers.is_active then
         return base_knowTalentType(self, talent_type_id)
     end
@@ -36,8 +60,8 @@ end
 
 local base_learnTalentType = _M.learnTalentType
 function _M:learnTalentType(tt, v)
-    local resourceful_wanderers = game:get_resourceful_wanderers()
-    if not resourceful_wanderers.is_active then
+    local resourceful_wanderers = self:get_resourceful_wanderers()
+    if not resourceful_wanderers.is_active or tt:gsub('/.*', '') == 'uber' then
         return base_learnTalentType(self, tt, v)
     end
 
@@ -56,7 +80,7 @@ end
 
 local base_numberKnownTalent = _M.numberKnownTalent
 function _M:numberKnownTalent(type, ...)
-    local resourceful_wanderers = game:get_resourceful_wanderers()
+    local resourceful_wanderers = self:get_resourceful_wanderers()
     if not resourceful_wanderers.is_active then
         return base_numberKnownTalent(self, type, ...)
     end
@@ -76,7 +100,7 @@ end
 
 local base_canLearnTalent = _M.canLearnTalent
 function _M:canLearnTalent(t, offset, ignore_special)
-    local resourceful_wanderers = game:get_resourceful_wanderers()
+    local resourceful_wanderers = self:get_resourceful_wanderers()
     if not resourceful_wanderers.is_active then
         return base_canLearnTalent(self, t, offset, ignore_special)
     end
@@ -94,7 +118,7 @@ end
 
 local base_getTalentReqDesc = _M.getTalentReqDesc
 function _M:getTalentReqDesc(t_id, levmod)
-    local resourceful_wanderers = game:get_resourceful_wanderers()
+    local resourceful_wanderers = self:get_resourceful_wanderers()
     if not resourceful_wanderers.is_active then
         return base_getTalentReqDesc(self, t_id, levmod)
     end
@@ -139,7 +163,7 @@ end
 
 local base_getTalentMastery = _M.getTalentMastery
 function _M:getTalentMastery(t)
-    local resourceful_wanderers = game:get_resourceful_wanderers()
+    local resourceful_wanderers = self:get_resourceful_wanderers()
     if not resourceful_wanderers.is_active then
         return base_getTalentMastery(self, t)
     end
