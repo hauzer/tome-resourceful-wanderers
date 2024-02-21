@@ -1,57 +1,19 @@
 # Resourceful Wanderers
 
-Help Wanderers make use of trees which are otherwise hard or impossible to use due to insufficient or non-existent resource generation.
+Help Wanderers make use of trees which are otherwise hard or impossible to use due to:
+* Insufficient or non-existent resource generation.
+* Other dependant talents.
+* Missing mastery talents.
+* Missing items.
+* Anything specific, like Chronomancy/Spellbinding and such.
 
-## General
+Any time a category or tree is learned which is dependant on something specific that you don't already have, one or multiple 'Wanderer' trees will be granted locked as well.
+
+These trees are usually at x0.8 mastery, and can have less or more than 4 talents, learnable out-of-order.
+
+Wanderer trees can be removed under certain conditions, and this will fully refund category and talent points. The exact conditions are detailed in each tree's description.
 
 Every Wanderer now knows the Shoot talent from the get-go, and starts with iron mail armour in addition to everything else.
-
-## Steamtech
-
-The first time a steamtech tree is learned, the tinker escort quest will be automatically resolved. Also, two steam generator implants, two iron steamsaws and two iron steamguns will be added to the inventory.
-
-## Equilibrium, Souls, Insanity
-
-When a first-of-its-kind talent which uses equilibrium, souls or insanity is learned, a relevant random resource-generation talent or a set of talents will be learned as well.
-- These are only given if you don't already know a relevant resource-generating talent or a tree containing one.
-- Only talents which pass the non-level, non-stats checks are eligible. For example, non-Dwarves won't be granted Stone Warden talents.
-- The first-of-its-kind talent you yourself learn is non-unlearnable, i.e. you won't be able to unlearn it.
-- The randomness takes the seed into account.
-
-The possible granted talents/talent groups are as follows:
-
-### *Equilibrium*
-- Meditation
-- Stoneshield
-- Stone Vines and Eldritch Vines
-- Nature's Defiance
-- Ancestral Life
-- Healing Nexus
-- Psiblades and Nature's Equilibrium
-- Mucus
-- Mitosis and Reabsorb
-- Swallow
-- Jelly
-
-### *Souls*
-- Soul Leech
-- Raze
-
-### *Insanity*
-- Diseased Tongue
-- Worm That Walks and Foul Convergence
-- Carrion Feet
-- Digest
-- Mutated Hand
-- Entropic Gift
-- Dark Whispers
-- Netherblast
-- Rift Cutter
-- Black Monolith
-- Tentacled Wings
-- Decaying Grounds
-
-Note that some of the talents are passives, so it may not be obvious at a first glance that you got them (i.e. nothing shows up on the hotkey bar).
 
 [addon](https://te4.org/games/addons/tome/resourceful-wanderers) | [forum](https://forums.te4.org/viewtopic.php?f=50&t=52893) | [steam](http://steamcommunity.com/sharedfiles/filedetails/?id=2644637486)
 
